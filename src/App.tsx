@@ -7,6 +7,11 @@ import { Navbar } from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import CountryCards from "./pages/CountryCards";
 import Transactions from "./pages/Transactions";
+import Profile from "./pages/Profile";
+import Orders from "./pages/Orders";
+import TopUp from "./pages/TopUp";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -17,18 +22,30 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen bg-background">
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/us-cards" element={<CountryCards country="US" />} />
-            <Route path="/uk-cards" element={<CountryCards country="UK" />} />
-            <Route path="/canada-cards" element={<CountryCards country="Canada" />} />
-            <Route path="/transactions" element={<Transactions />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </div>
+        <Routes>
+          {/* Auth routes without navbar */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          
+          {/* Main app routes with navbar */}
+          <Route path="/*" element={
+            <div className="min-h-screen bg-background">
+              <Navbar />
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/us-cards" element={<CountryCards country="US" />} />
+                <Route path="/uk-cards" element={<CountryCards country="UK" />} />
+                <Route path="/canada-cards" element={<CountryCards country="Canada" />} />
+                <Route path="/transactions" element={<Transactions />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/top-up" element={<TopUp />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+          } />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

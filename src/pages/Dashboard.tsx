@@ -1,8 +1,39 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CreditCard, TrendingUp, DollarSign, Users } from "lucide-react";
+import { CreditCard, TrendingUp, DollarSign, Users, Wallet, ShoppingBag, Gift, Award } from "lucide-react";
 
 const Dashboard = () => {
-  const stats = [
+  const userStats = [
+    {
+      title: "My Balance",
+      value: "$2,450.00",
+      change: "Available to spend",
+      icon: Wallet,
+      color: "text-success",
+    },
+    {
+      title: "Available Cards",
+      value: "156",
+      change: "Across all markets",
+      icon: Gift,
+      color: "text-primary",
+    },
+    {
+      title: "Recent Purchases",
+      value: "12",
+      change: "This month",
+      icon: ShoppingBag,
+      color: "text-secondary",
+    },
+    {
+      title: "Reward Points",
+      value: "3,420",
+      change: "$34 in credits",
+      icon: Award,
+      color: "text-accent",
+    },
+  ];
+
+  const platformStats = [
     {
       title: "Total Sales",
       value: "$45,231",
@@ -40,8 +71,32 @@ const Dashboard = () => {
         <p className="text-muted-foreground">Welcome back! Here's your overview</p>
       </div>
 
+      {/* User-specific stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat) => {
+        {userStats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={stat.title} className="overflow-hidden shadow-card hover:shadow-hover transition-all">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {stat.title}
+                </CardTitle>
+                <Icon className={`h-5 w-5 ${stat.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {stat.change}
+                </p>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Platform stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {platformStats.map((stat) => {
           const Icon = stat.icon;
           return (
             <Card key={stat.title} className="overflow-hidden shadow-card hover:shadow-hover transition-all">

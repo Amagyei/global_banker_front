@@ -13,6 +13,7 @@ import TopUp from "./pages/TopUp";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
+import { CartProvider } from "@/context/CartContext";
 
 const queryClient = new QueryClient();
 
@@ -29,21 +30,23 @@ const App = () => (
           
           {/* Main app routes with navbar */}
           <Route path="/*" element={
-            <div className="min-h-screen bg-background">
-              <Navbar />
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/us-cards" element={<CountryCards country="US" />} />
-                <Route path="/uk-cards" element={<CountryCards country="UK" />} />
-                <Route path="/canada-cards" element={<CountryCards country="Canada" />} />
-                <Route path="/transactions" element={<Transactions />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/top-up" element={<TopUp />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </div>
+            <CartProvider>
+              <div className="min-h-screen bg-background">
+                <Navbar />
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/us-banks" element={<CountryCards country="US" />} />
+                  <Route path="/uk-banks" element={<CountryCards country="UK" />} />
+                  <Route path="/canada-banks" element={<CountryCards country="Canada" />} />
+                  <Route path="/transactions" element={<Transactions />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/orders" element={<Orders />} />
+                  <Route path="/top-up" element={<TopUp />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </div>
+            </CartProvider>
           } />
         </Routes>
       </BrowserRouter>

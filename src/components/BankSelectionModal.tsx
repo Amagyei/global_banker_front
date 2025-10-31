@@ -9,28 +9,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-export interface Company {
+export interface Bank {
   id: string;
   name: string;
   logo: string;
 }
 
-interface CompanySelectionModalProps {
+interface BankSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  companies: Company[];
-  onSelectCompany: (company: Company) => void;
+  companies: Bank[];
+  onSelectCompany: (company: Bank) => void;
   country: string;
 }
 
-export const CompanySelectionModal = ({
+export const BankSelectionModal = ({
   isOpen,
   onClose,
   companies,
   onSelectCompany,
   country,
-}: CompanySelectionModalProps) => {
-  const handleSelect = (company: Company) => {
+}: BankSelectionModalProps) => {
+  const handleSelect = (company: Bank) => {
     onSelectCompany(company);
     onClose();
   };
@@ -39,9 +39,9 @@ export const CompanySelectionModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-popover">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Select Gift Card Brand</DialogTitle>
+          <DialogTitle className="text-2xl">Select Bank </DialogTitle>
           <DialogDescription>
-            Choose from available {country} gift card brands
+            Choose from available {country} bank 
           </DialogDescription>
         </DialogHeader>
         
@@ -69,3 +69,5 @@ export const CompanySelectionModal = ({
     </Dialog>
   );
 };
+
+

@@ -27,7 +27,7 @@ const mockOrders: Order[] = [
     orderNumber: "ORD-2024-002",
     date: "2024-01-20",
     brand: "Amazon",
-    items: "Amazon Gift Card $100",
+    items: "Amazon Bank $100",
     total: "$95.00",
     status: "completed",
   },
@@ -45,7 +45,7 @@ const mockOrders: Order[] = [
     orderNumber: "ORD-2024-004",
     date: "2024-01-18",
     brand: "iTunes",
-    items: "iTunes Gift Card $25",
+    items: "iTunes Bank $25",
     total: "$23.50",
     status: "pending",
   },
@@ -70,7 +70,7 @@ const Orders = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">My Orders</h1>
-        <p className="text-muted-foreground">Track and manage your gift card purchases</p>
+        <p className="text-muted-foreground">Track and manage your bank purchases</p>
       </div>
 
       <div className="grid gap-4">

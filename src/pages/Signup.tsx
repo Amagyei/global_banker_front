@@ -33,7 +33,7 @@ const Signup = () => {
             <div className="p-2 rounded-lg bg-gradient-primary">
               <CreditCard className="h-8 w-8 text-primary-foreground" />
             </div>
-            <span className="bg-gradient-primary bg-clip-text text-transparent">GiftCard Pro</span>
+            <span className="bg-gradient-primary bg-clip-text text-transparent">Bank Pro</span>
           </Link>
           <p className="text-muted-foreground mt-2">Create your account and start shopping</p>
         </div>

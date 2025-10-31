@@ -11,7 +11,7 @@ const Dashboard = () => {
       color: "text-success",
     },
     {
-      title: "Available Cards",
+      title: "Available Banks",
       value: "156",
       change: "Across all markets",
       icon: Gift,
@@ -42,7 +42,7 @@ const Dashboard = () => {
       color: "text-success",
     },
     {
-      title: "Active Cards",
+      title: "Active Banks",
       value: "2,350",
       change: "+15.3%",
       icon: CreditCard,
@@ -121,7 +121,7 @@ const Dashboard = () => {
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle>Popular Categories</CardTitle>
-            <CardDescription>Best selling gift card types</CardDescription>
+            <CardDescription>Best selling bank types</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -154,9 +154,9 @@ const Dashboard = () => {
             <div className="space-y-4">
               {[
                 { action: "PlayStation Plus purchased", time: "2 minutes ago", amount: "$773.00" },
-                { action: "Amazon gift card sold", time: "15 minutes ago", amount: "$50.00" },
+                { action: "Amazon bank sold", time: "15 minutes ago", amount: "$50.00" },
                 { action: "Steam Wallet added", time: "1 hour ago", amount: "$100.00" },
-                { action: "iTunes card redeemed", time: "2 hours ago", amount: "$25.00" },
+                { action: "iTunes bank redeemed", time: "2 hours ago", amount: "$25.00" },
               ].map((activity, index) => (
                 <div key={index} className="flex items-start gap-3 pb-3 border-b last:border-0">
                   <div className="w-2 h-2 rounded-full bg-primary mt-2" />

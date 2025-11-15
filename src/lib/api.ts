@@ -28,22 +28,11 @@ export function getUser<T = any>(): T | null {
 
 // Use relative URL when frontend and backend are on same server
 // This eliminates CORS issues since they share the same origin
-// Always use relative path in production to work with Nginx proxy
+// ALWAYS use relative path - works with both Vite proxy (dev) and Nginx (production)
 const getApiBaseURL = () => {
-  // In production builds (served via Nginx), ALWAYS use relative path
-  // This ensures requests go through Nginx proxy instead of directly to Gunicorn
-  if (import.meta.env.PROD) {
-    return "/api";
-  }
-  
-  // In development, check environment variable
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
-  // If env URL is set and is absolute, use it (for dev server)
-  if (envUrl && (envUrl.startsWith('http://') || envUrl.startsWith('https://'))) {
-    return envUrl;
-  }
-  // Default to relative path even in dev (works with Vite proxy or Nginx)
-  return envUrl || "/api";
+  // Always use relative path - Vite proxy handles it in dev, Nginx in production
+  // This ensures requests never try to connect directly to 127.0.0.1:8000 from browser
+  return "/api";
 };
 
 export const api = axios.create({

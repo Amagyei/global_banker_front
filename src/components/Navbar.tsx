@@ -1,4 +1,5 @@
-import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CreditCard, User, ShoppingBag, Wallet, LogOut, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
@@ -20,10 +21,109 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getWallet, getCart, createOrder } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { AlertCircle } from "lucide-react";
 
 export const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { items, totalQuantity, subtotal, removeFromCart, clearCart } = useCart();
+  const [wallet, setWallet] = useState<any>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const { toast: uiToast } = useToast();
+
+  useEffect(() => {
+    loadWallet();
+  }, []);
+
+  const loadWallet = async () => {
+    try {
+      const walletData = await getWallet();
+      setWallet(walletData);
+    } catch (error) {
+      console.error("Failed to load wallet:", error);
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (items.length === 0) {
+      uiToast({
+        title: "Empty Cart",
+        description: "Your cart is empty",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check wallet balance
+    const walletBalance = wallet?.balance_minor || 0;
+    const totalCents = Math.round(subtotal * 100);
+
+    if (walletBalance < totalCents) {
+      uiToast({
+        title: "Insufficient Balance",
+        description: `You need $${((totalCents - walletBalance) / 100).toFixed(2)} more. Please top up your wallet.`,
+        variant: "destructive",
+      });
+      navigate("/top-up");
+      return;
+    }
+
+    // Sync frontend cart items to backend
+    try {
+      setCheckoutLoading(true);
+      
+      // Sync items to backend cart
+      const { addToCart } = await import("@/lib/api");
+      for (const item of items) {
+        try {
+          await addToCart(item.id, item.quantity);
+        } catch (error) {
+          // Item might already be in cart, continue
+          console.log("Item sync:", error);
+        }
+      }
+      
+      // Create order with recipient info (using user's email as default)
+      const recipient = {
+        name: "Customer", // Could get from profile
+        email: "customer@example.com", // Could get from user profile
+      };
+
+      const order = await createOrder(recipient);
+      
+      toast.success("Order placed successfully!", {
+        description: `Order ${order.order_number} has been created`,
+      });
+      
+      clearCart();
+      loadWallet(); // Refresh wallet balance
+      navigate("/orders");
+    } catch (error: any) {
+      console.error("Failed to create order:", error);
+      const errorMsg = error.response?.data;
+      
+      if (errorMsg?.detail === "Insufficient wallet balance" || errorMsg?.detail?.includes("Insufficient")) {
+        uiToast({
+          title: "Insufficient Balance",
+          description: `You need $${errorMsg.shortfall?.toFixed(2) || "more"} more. Please top up your wallet.`,
+          variant: "destructive",
+        });
+        navigate("/top-up");
+      } else {
+        uiToast({
+          title: "Error",
+          description: errorMsg?.detail || "Failed to create order",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
   
   const navLinks = [
     { name: "Dashboard", path: "/" },
@@ -81,13 +181,39 @@ export const Navbar = () => {
                 </div>
                 <SheetFooter className="mt-6">
                   <div className="w-full space-y-3">
+                    {wallet && (
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Wallet Balance</span>
+                        <span className={
+                          wallet.balance_minor === 0 
+                            ? "text-destructive text-2xl font-bold" 
+                            : wallet.balance_minor >= Math.round(subtotal * 100) 
+                              ? "text-success font-semibold" 
+                              : "text-destructive font-semibold"
+                        }>
+                          {wallet.balance || "$0.00"}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
                       <span className="font-semibold">${subtotal.toFixed(2)}</span>
                     </div>
+                    {wallet && wallet.balance_minor < Math.round(subtotal * 100) && (
+                      <div className="text-xs text-destructive text-center">
+                        Insufficient balance. Top up required.
+                      </div>
+                    )}
                     <div className="flex gap-2 justify-end">
-                      <UIButton variant="outline" onClick={clearCart} disabled={items.length === 0}>Clear</UIButton>
-                      <UIButton disabled={items.length === 0}>Checkout</UIButton>
+                      <UIButton variant="outline" onClick={clearCart} disabled={items.length === 0 || checkoutLoading}>
+                        Clear
+                      </UIButton>
+                      <UIButton 
+                        disabled={items.length === 0 || checkoutLoading || (wallet && wallet.balance_minor < Math.round(subtotal * 100))}
+                        onClick={handleCheckout}
+                      >
+                        {checkoutLoading ? "Processing..." : "Checkout"}
+                      </UIButton>
                     </div>
                   </div>
                 </SheetFooter>
@@ -114,7 +240,9 @@ export const Navbar = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2 font-semibold">
                   <Wallet className="h-4 w-4" />
-                  <span className="text-success">$2,450.00</span>
+                  <span className={wallet && wallet.balance_minor === 0 ? "text-destructive text-2xl font-bold" : "text-success"}>
+                    {wallet?.balance || "$0.00"}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 bg-popover">

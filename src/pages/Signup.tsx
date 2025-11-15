@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CreditCard, Mail, Lock, User } from "lucide-react";
+import { register } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -14,11 +16,34 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
   });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Authentication will be implemented later
-    console.log("Signup attempted with:", formData.email);
+    if (formData.password !== formData.confirmPassword) {
+      toast({ title: "Passwords do not match", variant: "destructive" });
+      return;
+    }
+    try {
+      setLoading(true);
+      // TODO(verif): When PoW/deposit verification is enforced, attach the required proof to this request.
+      await register({
+        email: formData.email,
+        password: formData.password,
+        password_confirm: formData.confirmPassword,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+      });
+      toast({ title: "Account created", description: "You are now signed in." });
+      navigate("/");
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail || "Signup failed";
+      toast({ title: "Signup error", description: detail, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,8 +150,8 @@ const Signup = () => {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                Create Account
+              <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                {loading ? "Creating..." : "Create Account"}
               </Button>
 
               <div className="text-center text-sm text-muted-foreground">

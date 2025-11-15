@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -8,60 +9,53 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getTransactions } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 interface Transaction {
   id: string;
   date: string;
-  brand: string;
+  brand: string | null;
   description: string;
   amount: string;
   status: "completed" | "pending" | "failed";
 }
 
-const mockTransactions: Transaction[] = [
-  {
-    id: "1",
-    date: "2024-01-20 14:32",
-    brand: "PlayStation",
-    description: "PlayStation Plus 10 Years Subscription",
-    amount: "$773.00",
-    status: "completed",
-  },
-  {
-    id: "2",
-    date: "2024-01-20 12:15",
-    brand: "Amazon",
-    description: "Amazon Bank $100",
-    amount: "$95.00",
-    status: "completed",
-  },
-  {
-    id: "3",
-    date: "2024-01-19 16:45",
-    brand: "Steam",
-    description: "Steam Wallet Credit $50",
-    amount: "$47.50",
-    status: "pending",
-  },
-  {
-    id: "4",
-    date: "2024-01-19 10:20",
-    brand: "iTunes",
-    description: "iTunes Bank $25",
-    amount: "$23.50",
-    status: "completed",
-  },
-  {
-    id: "5",
-    date: "2024-01-18 18:30",
-    brand: "Xbox",
-    description: "Xbox Live Gold 12 Months",
-    amount: "$55.00",
-    status: "failed",
-  },
-];
-
 const Transactions = () => {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadTransactions();
+  }, []);
+
+  const loadTransactions = async () => {
+    try {
+      setLoading(true);
+      const response = await getTransactions({ ordering: '-created_at' });
+      const transactionsData = response.results || response;
+      const formattedTransactions: Transaction[] = transactionsData.map((tx: any) => ({
+        id: tx.id,
+        date: tx.date || tx.created_at,
+        brand: tx.brand,
+        description: tx.description,
+        amount: tx.amount,
+        status: tx.status,
+      }));
+      setTransactions(formattedTransactions);
+    } catch (error: any) {
+      console.error("Failed to load transactions:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load transactions",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusBadge = (status: Transaction["status"]) => {
     const variants = {
       completed: "default",
@@ -98,23 +92,37 @@ const Transactions = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockTransactions.map((transaction) => (
-              <TableRow key={transaction.id} className="hover:bg-muted/50">
-                <TableCell className="font-medium">
-                  {transaction.date}
-                </TableCell>
-                <TableCell className="font-semibold text-primary">
-                  {transaction.brand}
-                </TableCell>
-                <TableCell>{transaction.description}</TableCell>
-                <TableCell className="font-semibold text-success">
-                  {transaction.amount}
-                </TableCell>
-                <TableCell>
-                  {getStatusBadge(transaction.status)}
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                  Loading transactions...
                 </TableCell>
               </TableRow>
-            ))}
+            ) : transactions.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                  No transactions found
+                </TableCell>
+              </TableRow>
+            ) : (
+              transactions.map((transaction) => (
+                <TableRow key={transaction.id} className="hover:bg-muted/50">
+                  <TableCell className="font-medium">
+                    {transaction.date}
+                  </TableCell>
+                  <TableCell className="font-semibold text-primary">
+                    {transaction.brand || '-'}
+                  </TableCell>
+                  <TableCell>{transaction.description}</TableCell>
+                  <TableCell className="font-semibold text-success">
+                    {transaction.amount}
+                  </TableCell>
+                  <TableCell>
+                    {getStatusBadge(transaction.status)}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </Card>

@@ -1,19 +1,34 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CreditCard, Mail, Lock } from "lucide-react";
+import { login } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Authentication will be implemented later
-    console.log("Login attempted with:", email);
+    try {
+      setLoading(true);
+      // TODO(verif): Attach PoW solution when backend enables verification.
+      await login(email, password);
+      toast({ title: "Welcome back", description: "You are now signed in." });
+      navigate("/");
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail || "Login failed";
+      toast({ title: "Login error", description: detail, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,8 +89,8 @@ const Login = () => {
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                Login
+              <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                {loading ? "Signing in..." : "Login"}
               </Button>
 
               <div className="text-center text-sm text-muted-foreground">

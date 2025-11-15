@@ -1,69 +1,102 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { BankSelectionModal, Bank } from "@/components/BankSelectionModal";
 import { BankAccountTable, BankAccount } from "@/components/BankAccountTable";
 import { Filter } from "lucide-react";
+import { getBanks, getAccounts } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 interface CountryCardsProps {
   country: string;
 }
 
-// Mock data - in a real app, this would come from an API
-const banksByCountry: Record<string, Bank[]> = {
-  US: [
-    { id: "1", name: "Chase", logo: "C" },
-    { id: "2", name: "Bank Of America", logo: "BOA" },
-    { id: "3", name: "Wells Fargo", logo: "WF" },
-    
-  ],
-  UK: [
-    { id: "7", name: "Amazon UK", logo: "A" },
-    { id: "8", name: "Tesco", logo: "T" },
-    { id: "9", name: "Argos", logo: "A" },
-    { id: "10", name: "PlayStation UK", logo: "P" },
-    { id: "11", name: "iTunes UK", logo: "I" },
-    { id: "12", name: "Steam UK", logo: "S" },
-  ],
-  Canada: [
-    { id: "13", name: "Amazon CA", logo: "A" },
-    { id: "14", name: "Tim Hortons", logo: "T" },
-    { id: "15", name: "Canadian Tire", logo: "C" },
-    { id: "16", name: "PlayStation CA", logo: "P" },
-    { id: "17", name: "iTunes CA", logo: "I" },
-    { id: "18", name: "Steam CA", logo: "S" },
-  ],
-};
-
-const bankAccountsByBank: Record<string, BankAccount[]> = {
-  Chase: [
-    { id: "1", balance: "$16,937.00", description: "Chase Plus 10 Years old", price: "$773.00" },
-    { id: "2", balance: "$3,2350.00", description: " Chase Premium 3 years old", price: "$45.00" },
-    { id: "3", balance: "$100.00", description: "Chase Lite 1 Year + Bonus", price: "$89.99" },
-  ],
-  Amazon: [
-    { id: "4", balance: "$500.00", description: "Amazon Bank", price: "$475.00" },
-    { id: "5", balance: "$100.00", description: "Amazon Prime + Credit", price: "$95.00" },
-    { id: "6", balance: "$25.00", description: "Amazon Bank", price: "$23.50" },
-  ],
-  Steam: [
-    { id: "7", balance: "$200.00", description: "Steam Wallet Credit", price: "$190.00" },
-    { id: "8", balance: "$50.00", description: "Steam Bank", price: "$47.50" },
-    { id: "9", balance: "$20.00", description: "Steam Wallet Code", price: "$19.00" },
-  ],
+// Map country display names to country codes
+const countryCodeMap: Record<string, string> = {
+  US: "US",
+  UK: "UK",
+  Canada: "CA",
 };
 
 const CountryCards = ({ country }: CountryCardsProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
-  const companies = banksByCountry[country] || [];
+  const [banks, setBanks] = useState<Bank[]>([]);
+  const [accounts, setAccounts] = useState<BankAccount[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const countryCode = countryCodeMap[country] || country;
+
+  const loadBanks = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await getBanks({ country: countryCode, is_active: true });
+      const banksData = response.results || response;
+      const formattedBanks: Bank[] = banksData.map((bank: any) => ({
+        id: bank.id,
+        name: bank.name,
+        logo: bank.logo_url || bank.name.charAt(0),
+      }));
+      setBanks(formattedBanks);
+    } catch (error: any) {
+      console.error("Failed to load banks:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load banks",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [countryCode, toast]);
+
+  const loadAccounts = useCallback(async (bankId: string) => {
+    try {
+      setLoading(true);
+      const response = await getAccounts({
+        country: countryCode,
+        bank: bankId,
+        is_active: true,
+      });
+      const accountsData = response.results || response;
+      const formattedAccounts: BankAccount[] = accountsData.map((account: any) => ({
+        id: account.id,
+        balance: account.balance,
+        description: account.description,
+        price: account.price,
+      }));
+      setAccounts(formattedAccounts);
+    } catch (error: any) {
+      console.error("Failed to load accounts:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load bank accounts",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [countryCode, toast]);
+
+  // Reset state when country changes
+  useEffect(() => {
+    setSelectedBank(null);
+    setAccounts([]);
+    setBanks([]);
+    loadBanks();
+  }, [countryCode, loadBanks]);
+
+  useEffect(() => {
+    if (selectedBank) {
+      loadAccounts(selectedBank.id);
+    } else {
+      setAccounts([]);
+    }
+  }, [selectedBank, countryCode, loadAccounts]);
 
   const handleSelectCompany = (company: Bank) => {
     setSelectedBank(company);
   };
-
-  const currentBankAccounts = selectedBank 
-    ? bankAccountsByBank[selectedBank.name] || []
-    : [];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -83,9 +116,13 @@ const CountryCards = ({ country }: CountryCardsProps) => {
         </Button>
       </div>
 
-      {selectedBank ? (
+      {loading ? (
+        <div className="text-center py-16">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      ) : selectedBank ? (
         <BankAccountTable 
-          bankAccounts={currentBankAccounts} 
+          bankAccounts={accounts} 
           bankName={selectedBank.name}
         />
       ) : (
@@ -104,7 +141,7 @@ const CountryCards = ({ country }: CountryCardsProps) => {
       <BankSelectionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        companies={companies}
+        companies={banks}
         onSelectCompany={handleSelectCompany}
         country={country}
       />

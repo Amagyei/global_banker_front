@@ -28,10 +28,33 @@ export function getUser<T = any>(): T | null {
 
 // Use relative URL when frontend and backend are on same server
 // This eliminates CORS issues since they share the same origin
+// Always use relative path in production to work with Nginx proxy
+const getApiBaseURL = () => {
+  // In production builds (served via Nginx), ALWAYS use relative path
+  // This ensures requests go through Nginx proxy instead of directly to Gunicorn
+  if (import.meta.env.PROD) {
+    return "/api";
+  }
+  
+  // In development, check environment variable
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  // If env URL is set and is absolute, use it (for dev server)
+  if (envUrl && (envUrl.startsWith('http://') || envUrl.startsWith('https://'))) {
+    return envUrl;
+  }
+  // Default to relative path even in dev (works with Vite proxy or Nginx)
+  return envUrl || "/api";
+};
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
+  baseURL: getApiBaseURL(),
   timeout: 15000,
 });
+
+// Log API configuration in development
+if (import.meta.env.DEV) {
+  console.log("API Base URL:", api.defaults.baseURL);
+}
 
 // Attach Authorization header if token exists
 api.interceptors.request.use((config) => {
@@ -41,6 +64,10 @@ api.interceptors.request.use((config) => {
       config.headers = {} as typeof config.headers;
     }
     config.headers["Authorization"] = `Bearer ${token}`;
+  }
+  // Log requests in development
+  if (import.meta.env.DEV) {
+    console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, config);
   }
   return config;
 });
@@ -57,10 +84,8 @@ async function refreshToken(): Promise<string | null> {
   try {
     const refresh = localStorage.getItem(REFRESH_KEY);
     if (!refresh) return null;
-    const { data } = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL || "/api"}/auth/refresh`,
-      { refresh }
-    );
+    // Use the api instance to ensure consistent base URL
+    const { data } = await api.post("/auth/refresh", { refresh });
     const newAccess = data.access as string;
     // Update refresh token if rotation returned a new one
     if (data.refresh) {
@@ -81,8 +106,23 @@ async function refreshToken(): Promise<string | null> {
 }
 
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    // Log successful responses in development
+    if (import.meta.env.DEV) {
+      console.log(`[API Response] ${res.config.method?.toUpperCase()} ${res.config.url}`, res.status, res.data);
+    }
+    return res;
+  },
   async (error) => {
+    // Log errors
+    console.error("[API Error]", {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      message: error.message,
+      data: error.response?.data,
+    });
+    
     const original = error.config;
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true;

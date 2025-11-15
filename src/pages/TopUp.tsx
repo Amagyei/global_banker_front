@@ -126,7 +126,7 @@ const TopUp = () => {
             {loading ? (
               <div className="text-center py-4">Loading...</div>
             ) : (
-              <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-4">
                 <Wallet className={`h-8 w-8 ${wallet && wallet.balance_minor === 0 ? "text-destructive" : "text-success"}`} />
                 <div className={`font-bold ${wallet && wallet.balance_minor === 0 ? "text-destructive text-8xl" : "text-success text-4xl"}`}>
                   {wallet?.balance || "$0.00"}

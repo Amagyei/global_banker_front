@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getWallet, getCart, createOrder } from "@/lib/api";
+import { getWallet, getCart, createOrder, clearSession } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
 import { AlertCircle } from "lucide-react";
@@ -267,7 +267,15 @@ export const Navbar = () => {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive cursor-pointer">
+                <DropdownMenuItem 
+                  className="text-destructive cursor-pointer"
+                  onClick={() => {
+                    clearSession();
+                    clearCart();
+                    toast.success("Logged out successfully");
+                    navigate("/login");
+                  }}
+                >
                   <LogOut className="h-4 w-4 mr-2" />
                   Log Out
                 </DropdownMenuItem>

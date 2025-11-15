@@ -26,8 +26,10 @@ export function getUser<T = any>(): T | null {
   return raw ? (JSON.parse(raw) as T) : null;
 }
 
+// Use relative URL when frontend and backend are on same server
+// This eliminates CORS issues since they share the same origin
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
   timeout: 15000,
 });
 
@@ -54,7 +56,7 @@ async function refreshToken(): Promise<string | null> {
     const refresh = localStorage.getItem(REFRESH_KEY);
     if (!refresh) return null;
     const { data } = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api"}/auth/refresh`,
+      `${import.meta.env.VITE_API_BASE_URL || "/api"}/auth/refresh`,
       { refresh }
     );
     const newAccess = data.access as string;

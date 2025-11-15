@@ -74,7 +74,7 @@ async function refreshToken(): Promise<string | null> {
     const refresh = localStorage.getItem(REFRESH_KEY);
     if (!refresh) return null;
     // Use the api instance to ensure consistent base URL
-    const { data } = await api.post("/auth/refresh", { refresh });
+    const { data } = await api.post("/auth/refresh/", { refresh });
     const newAccess = data.access as string;
     // Update refresh token if rotation returned a new one
     if (data.refresh) {
@@ -129,7 +129,7 @@ api.interceptors.response.use(
 // Accounts API
 export async function login(email: string, password: string) {
   try {
-    const { data } = await api.post("/auth/login", { email, password });
+    const { data } = await api.post("/auth/login/", { email, password });
     console.log("Login response:", data);
     if (!data.tokens || !data.tokens.access || !data.tokens.refresh) {
       throw new Error("Invalid response format: missing tokens");
@@ -158,13 +158,13 @@ export async function register(payload: {
   first_name?: string;
   last_name?: string;
 }) {
-  const { data } = await api.post("/auth/register", payload);
+  const { data } = await api.post("/auth/register/", payload);
   setSession(data.tokens, data.user);
   return data;
 }
 
 export async function getMyProfile() {
-  const { data } = await api.get("/profile/me");
+  const { data } = await api.get("/profile/me/");
   return data;
 }
 
@@ -177,7 +177,7 @@ export async function updateMyProfile(patch: Partial<{
   time_zone: string;
   marketing_opt_in: boolean;
 }>) {
-  const { data } = await api.patch("/profile/me", patch);
+  const { data } = await api.patch("/profile/me/", patch);
   return data;
 }
 
@@ -186,12 +186,12 @@ export async function updateMyProfile(patch: Partial<{
 
 // Catalog API
 export async function getCountries(params?: { is_supported?: boolean }) {
-  const { data } = await api.get("/catalog/countries", { params });
+  const { data } = await api.get("/catalog/countries/", { params });
   return data;
 }
 
 export async function getBanks(params?: { country?: string; is_active?: boolean }) {
-  const { data } = await api.get("/catalog/banks", { params });
+  const { data } = await api.get("/catalog/banks/", { params });
   return data;
 }
 
@@ -201,7 +201,7 @@ export async function getAccounts(params?: {
   is_active?: boolean;
   ordering?: string;
 }) {
-  const { data } = await api.get("/catalog/accounts", { params });
+  const { data } = await api.get("/catalog/accounts/", { params });
   return data;
 }
 
@@ -216,7 +216,7 @@ export async function getTransactions(params?: {
   max_amount?: number;
   ordering?: string;
 }) {
-  const { data } = await api.get("/transactions", { params });
+  const { data } = await api.get("/transactions/", { params });
   return data;
 }
 

@@ -40,14 +40,22 @@ export const VerificationWarning = () => {
 
   return (
     <Alert className="border-destructive bg-destructive/10 rounded-none border-x-0 border-t-0">
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3 flex-1">
-          <AlertCircle className="h-5 w-5 text-destructive" />
-          <AlertDescription className="text-sm font-medium">
+      <div className="container mx-auto px-4 py-3 flex flex-col gap-3">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+          <AlertDescription className="text-sm font-medium flex-1">
             Your account is not verified. Please top up your wallet to verify your account and start making purchases.
           </AlertDescription>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setDismissed(true)}
+            className="h-8 w-8 p-0 shrink-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pl-8">
           <Button
             variant="default"
             size="sm"
@@ -55,14 +63,6 @@ export const VerificationWarning = () => {
             className="bg-destructive hover:bg-destructive/90"
           >
             Top Up Now
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setDismissed(true)}
-            className="h-8 w-8 p-0"
-          >
-            <X className="h-4 w-4" />
           </Button>
         </div>
       </div>

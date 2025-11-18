@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
-import { TopRightMenu } from "./components/TopRightMenu";
+import { Sidebar } from "./components/Sidebar";
 import { VerificationWarning } from "./components/VerificationWarning";
 import Dashboard from "./pages/Dashboard";
 import CountryCards from "./pages/CountryCards";
@@ -19,6 +19,31 @@ import { CartProvider } from "@/context/CartContext";
 import { ProtectedRoute } from "@/lib/auth";
 
 const queryClient = new QueryClient();
+
+const MainContent = () => {
+  return (
+    <Navbar>
+      <Sidebar />
+      <div className="flex h-screen bg-background pt-16">
+        <div className="flex-1 overflow-auto">
+          <VerificationWarning />
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/us-banks" element={<CountryCards country="US" />} />
+            <Route path="/uk-banks" element={<CountryCards country="UK" />} />
+            <Route path="/canada-banks" element={<CountryCards country="Canada" />} />
+            <Route path="/transactions" element={<Transactions />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/top-up" element={<TopUp />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+      </div>
+    </Navbar>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -35,25 +60,7 @@ const App = () => (
           <Route element={<ProtectedRoute /> }>
             <Route path="/*" element={
               <CartProvider>
-                <div className="flex h-screen bg-background">
-                  <Navbar />
-                  <TopRightMenu />
-                  <div className="flex-1 overflow-auto transition-all duration-300" style={{ marginLeft: 'var(--sidebar-width, 16rem)' }}>
-                    <VerificationWarning />
-                    <Routes>
-                      <Route path="/" element={<Dashboard />} />
-                      <Route path="/us-banks" element={<CountryCards country="US" />} />
-                      <Route path="/uk-banks" element={<CountryCards country="UK" />} />
-                      <Route path="/canada-banks" element={<CountryCards country="Canada" />} />
-                      <Route path="/transactions" element={<Transactions />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/orders" element={<Orders />} />
-                      <Route path="/top-up" element={<TopUp />} />
-                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </div>
-                </div>
+                <MainContent />
               </CartProvider>
             } />
           </Route>

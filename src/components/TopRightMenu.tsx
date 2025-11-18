@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { User, ShoppingBag, Wallet, LogOut } from "lucide-react";
+import { User, ShoppingBag, Wallet, LogOut, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,11 +14,13 @@ import { getWallet, clearSession } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useSidebar } from "./Navbar";
 
 export const TopRightMenu = () => {
   const navigate = useNavigate();
   const { clearCart } = useCart();
   const [wallet, setWallet] = useState<any>(null);
+  const { setSidebarOpen } = useSidebar();
 
   useEffect(() => {
     loadWallet();
@@ -95,6 +97,16 @@ export const TopRightMenu = () => {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      
+      {/* Burger Menu Icon */}
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setSidebarOpen(true)}
+        className="shadow-lg"
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
     </div>
   );
 };

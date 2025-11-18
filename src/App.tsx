@@ -24,8 +24,8 @@ const MainContent = () => {
   return (
     <Navbar>
       <Sidebar />
-      <div className="flex h-screen bg-background pt-16">
-        <div className="flex-1 overflow-auto">
+      <div className="flex min-h-screen bg-background">
+        <div className="flex-1 overflow-auto pt-16">
           <VerificationWarning />
           <Routes>
             <Route path="/" element={<Dashboard />} />

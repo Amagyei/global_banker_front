@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { CreditCard, User, ShoppingBag, Wallet, LogOut, ShoppingCart } from "lucide-react";
+import { CreditCard, User, ShoppingBag, Wallet, LogOut, ShoppingCart, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 import {
@@ -26,6 +26,18 @@ import { getWallet, getCart, createOrder, clearSession } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
 import { AlertCircle } from "lucide-react";
+import { createContext, useContext } from "react";
+
+// Context for sidebar state
+const SidebarContext = createContext<{ sidebarOpen: boolean; setSidebarOpen: (open: boolean) => void } | null>(null);
+
+export const useSidebar = () => {
+  const context = useContext(SidebarContext);
+  if (!context) {
+    throw new Error("useSidebar must be used within Navbar");
+  }
+  return context;
+};
 
 export const Navbar = () => {
   const location = useLocation();
@@ -33,11 +45,20 @@ export const Navbar = () => {
   const { items, totalQuantity, subtotal, removeFromCart, clearCart } = useCart();
   const [wallet, setWallet] = useState<any>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const { toast: uiToast } = useToast();
 
   useEffect(() => {
     loadWallet();
   }, []);
+
+  // Update CSS variable for main content margin
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      '--sidebar-width',
+      sidebarOpen ? '16rem' : '4rem'
+    );
+  }, [sidebarOpen]);
 
   const loadWallet = async () => {
     try {
@@ -126,164 +147,243 @@ export const Navbar = () => {
   };
   
   const navLinks = [
-    { name: "Dashboard", path: "/" },
-    { name: "US Banks", path: "/us-banks" },
-    { name: "UK Banks", path: "/uk-banks" },
-    { name: "Canada Banks", path: "/canada-banks" },
-    { name: "Transactions", path: "/transactions" },
+    { name: "Dashboard", path: "/", icon: CreditCard },
+    { name: "US Banks", path: "/us-banks", icon: ShoppingBag },
+    { name: "UK Banks", path: "/uk-banks", icon: ShoppingBag },
+    { name: "Canada Banks", path: "/canada-banks", icon: ShoppingBag },
+    { name: "Transactions", path: "/transactions", icon: Wallet },
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 font-bold text-xl">
-            <div className="p-2 rounded-lg bg-gradient-primary">
-              <CreditCard className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <span className="bg-gradient-primary bg-clip-text text-transparent">Bank Pro</span>
-          </Link>
-          
-          <div className="flex items-center gap-4">
-            <Sheet>
-              <SheetTrigger asChild>
-                <button className="relative inline-flex items-center justify-center rounded-lg px-3 py-2 hover:bg-muted transition-colors">
+    <SidebarContext.Provider value={{ sidebarOpen, setSidebarOpen }}>
+      <div className="flex h-screen">
+        {/* Vertical Sidebar */}
+        <aside
+        className={cn(
+          "fixed left-0 top-0 z-50 h-full border-r border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 transition-all duration-300 flex flex-col",
+          sidebarOpen ? "w-64" : "w-16"
+        )}
+      >
+        {/* Sidebar Header */}
+        <div className="flex h-16 items-center justify-between border-b border-border px-4">
+          {sidebarOpen ? (
+            <Link to="/" className="flex items-center gap-2 font-bold text-xl">
+              <div className="p-2 rounded-lg bg-gradient-primary">
+                <CreditCard className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <span className="bg-gradient-primary bg-clip-text text-transparent">Bank Pro</span>
+            </Link>
+          ) : (
+            <Link to="/" className="flex items-center justify-center">
+              <div className="p-2 rounded-lg bg-gradient-primary">
+                <CreditCard className="h-5 w-5 text-primary-foreground" />
+              </div>
+            </Link>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="h-8 w-8"
+          >
+            {sidebarOpen ? (
+              <ChevronLeft className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+
+        {/* Navigation Links */}
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+          {navLinks.map((link) => {
+            const Icon = link.icon;
+            const isActive = location.pathname === link.path;
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "hover:bg-muted text-muted-foreground hover:text-foreground",
+                  !sidebarOpen && "justify-center px-2"
+                )}
+                title={!sidebarOpen ? link.name : undefined}
+              >
+                <Icon className={cn(
+                  "shrink-0",
+                  sidebarOpen ? "h-5 w-5" : "h-5 w-5"
+                )} />
+                {sidebarOpen && <span className="flex-1">{link.name}</span>}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Wallet Balance & Account Section */}
+        <div className="border-t border-border p-4 space-y-3">
+          {/* Wallet Balance */}
+          <div className={cn(
+            "flex items-center gap-3 rounded-lg px-3 py-2.5",
+            wallet && wallet.balance_minor === 0 
+              ? "bg-destructive/10 text-destructive" 
+              : "bg-muted",
+            !sidebarOpen && "justify-center px-2"
+          )}>
+            <Wallet className="h-5 w-5 shrink-0" />
+            {sidebarOpen && (
+              <div className="flex-1 min-w-0">
+                <div className="text-xs text-muted-foreground">Balance</div>
+                <div className={cn(
+                  "font-semibold truncate",
+                  wallet && wallet.balance_minor === 0 ? "text-destructive text-lg" : "text-success"
+                )}>
+                  {wallet?.balance || "$0.00"}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Shopping Cart */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full gap-3",
+                  sidebarOpen ? "justify-start" : "justify-center px-2"
+                )}
+              >
+                <div className="relative flex items-center justify-center">
                   <ShoppingCart className="h-5 w-5" />
                   {totalQuantity > 0 && (
-                    <span className="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs h-5 min-w-[20px] px-1">
+                    <span className="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs h-4 min-w-[16px] px-1">
                       {totalQuantity}
                     </span>
                   )}
-                </button>
-              </SheetTrigger>
-              <SheetContent side="right" className="bg-popover sm:max-w-lg">
-                <SheetHeader>
-                  <SheetTitle>Cart</SheetTitle>
-                </SheetHeader>
-                <div className="mt-4 space-y-4">
-                  {items.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Your cart is empty.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {items.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between gap-3 rounded-md border p-3">
-                          <div className="min-w-0">
-                            <p className="truncate font-medium">{item.description}</p>
-                            <p className="text-sm text-muted-foreground">Qty: {item.quantity} • {item.price}</p>
-                          </div>
-                          <UIButton variant="outline" size="sm" onClick={() => removeFromCart(item.id)}>
-                            Remove
-                          </UIButton>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
-                <SheetFooter className="mt-6">
-                  <div className="w-full space-y-3">
-                    {wallet && (
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Wallet Balance</span>
-                        <span className={
-                          wallet.balance_minor === 0 
-                            ? "text-destructive text-2xl font-bold" 
-                            : wallet.balance_minor >= Math.round(subtotal * 100) 
-                              ? "text-success font-semibold" 
-                              : "text-destructive font-semibold"
-                        }>
-                          {wallet.balance || "$0.00"}
-                        </span>
+                {sidebarOpen && <span>Cart ({totalQuantity})</span>}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="bg-popover sm:max-w-lg">
+              <SheetHeader>
+                <SheetTitle>Cart</SheetTitle>
+              </SheetHeader>
+              <div className="mt-4 space-y-4">
+                {items.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Your cart is empty.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {items.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between gap-3 rounded-md border p-3">
+                        <div className="min-w-0">
+                          <p className="truncate font-medium">{item.description}</p>
+                          <p className="text-sm text-muted-foreground">Qty: {item.quantity} • {item.price}</p>
+                        </div>
+                        <UIButton variant="outline" size="sm" onClick={() => removeFromCart(item.id)}>
+                          Remove
+                        </UIButton>
                       </div>
-                    )}
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Subtotal</span>
-                      <span className="font-semibold">${subtotal.toFixed(2)}</span>
-                    </div>
-                    {wallet && wallet.balance_minor < Math.round(subtotal * 100) && (
-                      <div className="text-xs text-destructive text-center">
-                        Insufficient balance. Top up required.
-                      </div>
-                    )}
-                    <div className="flex gap-2 justify-end">
-                      <UIButton variant="outline" onClick={clearCart} disabled={items.length === 0 || checkoutLoading}>
-                        Clear
-                      </UIButton>
-                      <UIButton 
-                        disabled={items.length === 0 || checkoutLoading || (wallet && wallet.balance_minor < Math.round(subtotal * 100))}
-                        onClick={handleCheckout}
-                      >
-                        {checkoutLoading ? "Processing..." : "Checkout"}
-                      </UIButton>
-                    </div>
+                    ))}
                   </div>
-                </SheetFooter>
-              </SheetContent>
-            </Sheet>
-            <div className="flex items-center gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                    location.pathname === link.path
-                      ? "bg-primary text-primary-foreground shadow-md"
-                      : "hover:bg-muted"
+                )}
+              </div>
+              <SheetFooter className="mt-6">
+                <div className="w-full space-y-3">
+                  {wallet && (
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Wallet Balance</span>
+                      <span className={
+                        wallet.balance_minor === 0 
+                          ? "text-destructive text-2xl font-bold" 
+                          : wallet.balance_minor >= Math.round(subtotal * 100) 
+                            ? "text-success font-semibold" 
+                            : "text-destructive font-semibold"
+                      }>
+                        {wallet.balance || "$0.00"}
+                      </span>
+                    </div>
                   )}
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                  </div>
+                  {wallet && wallet.balance_minor < Math.round(subtotal * 100) && (
+                    <div className="text-xs text-destructive text-center">
+                      Insufficient balance. Top up required.
+                    </div>
+                  )}
+                  <div className="flex gap-2 justify-end">
+                    <UIButton variant="outline" onClick={clearCart} disabled={items.length === 0 || checkoutLoading}>
+                      Clear
+                    </UIButton>
+                    <UIButton 
+                      disabled={items.length === 0 || checkoutLoading || (wallet && wallet.balance_minor < Math.round(subtotal * 100))}
+                      onClick={handleCheckout}
+                    >
+                      {checkoutLoading ? "Processing..." : "Checkout"}
+                    </UIButton>
+                  </div>
+                </div>
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2 font-semibold">
+          {/* Account Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full gap-3",
+                  sidebarOpen ? "justify-start" : "justify-center px-2"
+                )}
+              >
+                <User className="h-5 w-5 shrink-0" />
+                {sidebarOpen && <span>Account</span>}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-popover">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                  <User className="h-4 w-4" />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/orders" className="flex items-center gap-2 cursor-pointer">
+                  <ShoppingBag className="h-4 w-4" />
+                  Orders
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/top-up" className="flex items-center gap-2 cursor-pointer">
                   <Wallet className="h-4 w-4" />
-                  <span className={wallet && wallet.balance_minor === 0 ? "text-destructive text-2xl font-bold" : "text-success"}>
-                    {wallet?.balance || "$0.00"}
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-popover">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
-                    <User className="h-4 w-4" />
-                    Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/orders" className="flex items-center gap-2 cursor-pointer">
-                    <ShoppingBag className="h-4 w-4" />
-                    Orders
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/top-up" className="flex items-center gap-2 cursor-pointer">
-                    <Wallet className="h-4 w-4" />
-                    Top Up
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  className="text-destructive cursor-pointer"
-                  onClick={() => {
-                    clearSession();
-                    clearCart();
-                    toast.success("Logged out successfully");
-                    navigate("/login");
-                  }}
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Log Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                  Top Up
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="text-destructive cursor-pointer"
+                onClick={() => {
+                  clearSession();
+                  clearCart();
+                  toast.success("Logged out successfully");
+                  navigate("/login");
+                }}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Log Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
+      </aside>
       </div>
-    </nav>
+    </SidebarContext.Provider>
   );
 };

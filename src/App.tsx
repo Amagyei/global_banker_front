@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
+import { TopRightMenu } from "./components/TopRightMenu";
 import { VerificationWarning } from "./components/VerificationWarning";
 import Dashboard from "./pages/Dashboard";
 import CountryCards from "./pages/CountryCards";
@@ -34,21 +35,24 @@ const App = () => (
           <Route element={<ProtectedRoute /> }>
             <Route path="/*" element={
               <CartProvider>
-                <div className="min-h-screen bg-background">
+                <div className="flex h-screen bg-background">
                   <Navbar />
-                  <VerificationWarning />
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/us-banks" element={<CountryCards country="US" />} />
-                    <Route path="/uk-banks" element={<CountryCards country="UK" />} />
-                    <Route path="/canada-banks" element={<CountryCards country="Canada" />} />
-                    <Route path="/transactions" element={<Transactions />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/orders" element={<Orders />} />
-                    <Route path="/top-up" element={<TopUp />} />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                  <TopRightMenu />
+                  <div className="flex-1 overflow-auto transition-all duration-300" style={{ marginLeft: 'var(--sidebar-width, 16rem)' }}>
+                    <VerificationWarning />
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/us-banks" element={<CountryCards country="US" />} />
+                      <Route path="/uk-banks" element={<CountryCards country="UK" />} />
+                      <Route path="/canada-banks" element={<CountryCards country="Canada" />} />
+                      <Route path="/transactions" element={<Transactions />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/orders" element={<Orders />} />
+                      <Route path="/top-up" element={<TopUp />} />
+                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </div>
                 </div>
               </CartProvider>
             } />

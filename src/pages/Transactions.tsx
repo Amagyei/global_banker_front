@@ -106,21 +106,21 @@ const Transactions = () => {
               </TableRow>
             ) : (
               transactions.map((transaction) => (
-                <TableRow key={transaction.id} className="hover:bg-muted/50">
-                  <TableCell className="font-medium">
-                    {transaction.date}
-                  </TableCell>
-                  <TableCell className="font-semibold text-primary">
+              <TableRow key={transaction.id} className="hover:bg-muted/50">
+                <TableCell className="font-medium">
+                  {transaction.date}
+                </TableCell>
+                <TableCell className="font-semibold text-primary">
                     {transaction.brand || '-'}
-                  </TableCell>
-                  <TableCell>{transaction.description}</TableCell>
-                  <TableCell className="font-semibold text-success">
-                    {transaction.amount}
-                  </TableCell>
-                  <TableCell>
-                    {getStatusBadge(transaction.status)}
-                  </TableCell>
-                </TableRow>
+                </TableCell>
+                <TableCell>{transaction.description}</TableCell>
+                <TableCell className="font-semibold text-success">
+                  {transaction.amount}
+                </TableCell>
+                <TableCell>
+                  {getStatusBadge(transaction.status)}
+                </TableCell>
+              </TableRow>
               ))
             )}
           </TableBody>

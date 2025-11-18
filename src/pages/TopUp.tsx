@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, DollarSign, Copy, Check, QrCode } from "lucide-react";
 import { toast } from "sonner";
-import { getWallet, getCryptoNetworks, createTopUp } from "@/lib/api";
+import { getWallet, getCryptoNetworks, createTopUp, checkTopUpStatus } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 
 interface CryptoNetwork {
@@ -25,12 +25,46 @@ const TopUp = () => {
   const [creating, setCreating] = useState(false);
   const [topupData, setTopupData] = useState<any>(null);
   const [copied, setCopied] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState<string>("");
+  const [checkingStatus, setCheckingStatus] = useState(false);
   const { toast: uiToast } = useToast();
   const quickAmounts = [50, 100, 250, 500, 1000];
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // Countdown timer for top-up expiration
+  useEffect(() => {
+    if (!topupData?.expires_at) {
+      setTimeRemaining("");
+      return;
+    }
+
+    const updateCountdown = () => {
+      const expiresAt = new Date(topupData.expires_at);
+      const now = new Date();
+      const diff = expiresAt.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setTimeRemaining("Expired");
+        return;
+      }
+
+      const totalSeconds = Math.floor(diff / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      setTimeRemaining(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+    };
+
+    // Update immediately
+    updateCountdown();
+
+    // Update every second
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [topupData?.expires_at]);
 
   const loadData = async () => {
     try {
@@ -109,6 +143,37 @@ const TopUp = () => {
     }
   };
 
+  const handleCheckStatus = async () => {
+    if (!topupData?.id) return;
+
+    try {
+      setCheckingStatus(true);
+      const response = await checkTopUpStatus(topupData.id);
+      // Response format: { checked: boolean, topup: {...} }
+      const updated = response.topup || response;
+      setTopupData(updated);
+      
+      if (updated.status === 'succeeded') {
+        toast.success("Payment confirmed! Your balance has been updated.");
+        // Reload wallet balance
+        loadData();
+      } else if (response.checked) {
+        toast.info("Transaction found! Waiting for confirmations...");
+      } else {
+        toast.info("No transaction found yet. Please check again in a few moments.");
+      }
+    } catch (error: any) {
+      console.error("Failed to check status:", error);
+      uiToast({
+        title: "Error",
+        description: error.response?.data?.detail || "Failed to check payment status",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
@@ -182,8 +247,23 @@ const TopUp = () => {
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Expires in:</span>
-                <span>{topupData.expires_in_minutes} minutes</span>
+                <span className="font-mono font-semibold">
+                  {timeRemaining || `${topupData.expires_in_minutes || 0}:00`}
+                </span>
               </div>
+              {topupData.status === 'pending' && (
+                <div className="pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCheckStatus}
+                    disabled={checkingStatus}
+                    className="w-full"
+                  >
+                    {checkingStatus ? "Checking..." : "Check Payment Status"}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

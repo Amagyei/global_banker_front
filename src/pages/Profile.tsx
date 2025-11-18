@@ -1,10 +1,32 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Mail, Phone, MapPin } from "lucide-react";
+import { User, Mail, Phone, MapPin, Wallet } from "lucide-react";
+import { getWallet } from "@/lib/api";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
+  const [wallet, setWallet] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadWallet();
+  }, []);
+
+  const loadWallet = async () => {
+    try {
+      setLoading(true);
+      const walletData = await getWallet();
+      setWallet(walletData);
+    } catch (error) {
+      console.error("Failed to load wallet:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
@@ -70,8 +92,34 @@ const Profile = () => {
             <CardDescription>Your current wallet balance</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-success mb-4">$2,450.00</div>
-            <Button variant="secondary">View Transaction History</Button>
+            {loading ? (
+              <div className="text-center py-4 text-muted-foreground">Loading...</div>
+            ) : (
+              <>
+                <div className={`text-4xl font-bold mb-4 flex items-center gap-2 ${
+                  wallet && wallet.balance_minor === 0 
+                    ? "text-destructive" 
+                    : "text-success"
+                }`}>
+                  <Wallet className={`h-8 w-8 ${
+                    wallet && wallet.balance_minor === 0 
+                      ? "text-destructive" 
+                      : "text-success"
+                  }`} />
+                  {wallet?.balance || "$0.00"}
+                </div>
+                {wallet && wallet.balance_minor === 0 && (
+                  <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                    <p className="text-sm text-destructive font-medium">
+                      Your account is not verified. Please top up to verify your account.
+                    </p>
+                  </div>
+                )}
+                <Link to="/transactions">
+                  <Button variant="secondary" className="w-full">View Transaction History</Button>
+                </Link>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

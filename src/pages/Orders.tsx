@@ -95,38 +95,38 @@ const Orders = () => {
           <p className="text-muted-foreground">No orders found</p>
         </div>
       ) : (
-        <div className="grid gap-4">
+      <div className="grid gap-4">
           {orders.map((order) => (
-            <Card key={order.id} className="p-6 shadow-card hover:shadow-hover transition-all">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-5 w-5 text-primary" />
+          <Card key={order.id} className="p-6 shadow-card hover:shadow-hover transition-all">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-primary" />
                     <span className="font-semibold text-lg">{order.order_number}</span>
-                    {getStatusBadge(order.status)}
+                  {getStatusBadge(order.status)}
+                </div>
+                
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    {order.date}
                   </div>
-                  
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      {order.date}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <CreditCard className="h-4 w-4" />
-                      {order.brand}
-                    </div>
+                  <div className="flex items-center gap-1">
+                    <CreditCard className="h-4 w-4" />
+                    {order.brand}
                   </div>
-
-                  <p className="text-sm">{order.items}</p>
                 </div>
 
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-success">{order.total}</div>
-                </div>
+                <p className="text-sm">{order.items}</p>
               </div>
-            </Card>
-          ))}
-        </div>
+
+              <div className="text-right">
+                <div className="text-2xl font-bold text-success">{order.total}</div>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
       )}
     </div>
   );

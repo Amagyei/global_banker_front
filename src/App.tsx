@@ -8,10 +8,15 @@ import { Sidebar } from "./components/Sidebar";
 import { VerificationWarning } from "./components/VerificationWarning";
 import Dashboard from "./pages/Dashboard";
 import CountryCards from "./pages/CountryCards";
+import Fullz from "./pages/Fullz";
 import Transactions from "./pages/Transactions";
 import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
 import TopUp from "./pages/TopUp";
+import TopUpOxaPay from "./pages/TopUpOxaPay";
+import Checkout from "./pages/Checkout";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import WebhookStatus from "./pages/WebhookStatus";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -32,10 +37,15 @@ const MainContent = () => {
             <Route path="/us-banks" element={<CountryCards country="US" />} />
             <Route path="/uk-banks" element={<CountryCards country="UK" />} />
             <Route path="/canada-banks" element={<CountryCards country="Canada" />} />
+            <Route path="/fullz" element={<Fullz />} />
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/top-up" element={<TopUp />} />
+            <Route path="/top-up-oxapay" element={<TopUpOxaPay />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/webhook-status" element={<WebhookStatus />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

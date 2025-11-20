@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { CreditCard, User, ShoppingBag, Wallet, LogOut, ShoppingCart } from "lucide-react";
+import { CreditCard, User, ShoppingBag, Wallet, LogOut, ShoppingCart, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 import {
@@ -69,71 +69,8 @@ export const Sidebar = () => {
       return;
     }
 
-    // Check wallet balance
-    const walletBalance = wallet?.balance_minor || 0;
-    const totalCents = Math.round(subtotal * 100);
-
-    if (walletBalance < totalCents) {
-      uiToast({
-        title: "Insufficient Balance",
-        description: `You need $${((totalCents - walletBalance) / 100).toFixed(2)} more. Please top up your wallet.`,
-        variant: "destructive",
-      });
-      navigate("/top-up");
-      return;
-    }
-
-    // Sync frontend cart items to backend
-    try {
-      setCheckoutLoading(true);
-      
-      // Sync items to backend cart
-      const { addToCart } = await import("@/lib/api");
-      for (const item of items) {
-        try {
-          await addToCart(item.id, item.quantity);
-        } catch (error) {
-          // Item might already be in cart, continue
-          console.log("Item sync:", error);
-        }
-      }
-      
-      // Create order with recipient info (using user's email as default)
-      const recipient = {
-        name: "Customer", // Could get from profile
-        email: "customer@example.com", // Could get from user profile
-      };
-
-      const order = await createOrder(recipient);
-      
-      toast.success("Order placed successfully!", {
-        description: `Order ${order.order_number} has been created`,
-      });
-      
-      clearCart();
-      loadWallet(); // Refresh wallet balance
-      navigate("/orders");
-    } catch (error: any) {
-      console.error("Failed to create order:", error);
-      const errorMsg = error.response?.data;
-      
-      if (errorMsg?.detail === "Insufficient wallet balance" || errorMsg?.detail?.includes("Insufficient")) {
-        uiToast({
-          title: "Insufficient Balance",
-          description: `You need $${errorMsg.shortfall?.toFixed(2) || "more"} more. Please top up your wallet.`,
-          variant: "destructive",
-        });
-        navigate("/top-up");
-      } else {
-        uiToast({
-          title: "Error",
-          description: errorMsg?.detail || "Failed to create order",
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setCheckoutLoading(false);
-    }
+    // Redirect to checkout page where user can choose payment method
+    navigate("/checkout");
   };
   
   const navLinks = [
@@ -141,6 +78,8 @@ export const Sidebar = () => {
     { name: "US Banks", path: "/us-banks", icon: ShoppingBag },
     { name: "UK Banks", path: "/uk-banks", icon: ShoppingBag },
     { name: "Canada Banks", path: "/canada-banks", icon: ShoppingBag },
+    { name: "Webhook Status", path: "/webhook-status", icon: Activity },
+    { name: "Fullz", path: "/fullz", icon: ShoppingBag },
     { name: "Transactions", path: "/transactions", icon: Wallet },
   ];
 
@@ -343,6 +282,12 @@ export const Sidebar = () => {
                   <Link to="/top-up" className="flex items-center gap-2 cursor-pointer">
                     <Wallet className="h-4 w-4" />
                     Top Up
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/top-up-oxapay" className="flex items-center gap-2 cursor-pointer">
+                    <Wallet className="h-4 w-4" />
+                    Top Up (OXA Pay)
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

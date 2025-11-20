@@ -130,7 +130,7 @@ export default function WebhookStatus() {
         <div>
           <h1 className="text-3xl font-bold">Webhook Status</h1>
           <p className="text-muted-foreground mt-2">
-            Monitor OXA Pay webhook activity and payment status
+            Monitor webhook activity and payment status
           </p>
         </div>
         <Button onClick={fetchStatus} disabled={loading} variant="outline">
@@ -216,7 +216,7 @@ export default function WebhookStatus() {
           <Card>
             <CardHeader>
               <CardTitle>Webhook Endpoint</CardTitle>
-              <CardDescription>OXA Pay sends payment notifications to this URL</CardDescription>
+              <CardDescription>Payment notifications are sent to this URL</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">

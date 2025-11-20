@@ -7,9 +7,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Wallet, CreditCard, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
-import { getWallet, getCryptoNetworks, generateOxaPayInvoice } from "@/lib/api";
+import { getWallet, getCryptoNetworks, generateInvoice } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-type PaymentMethod = "wallet" | "oxapay";
+type PaymentMethod = "wallet" | "crypto";
 
 // Hardcoded list of supported networks (mainnet only, no testnet)
 const SUPPORTED_NETWORKS = ['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'SOL', 'LTC'];
@@ -75,7 +75,7 @@ const Checkout = () => {
     navigate("/orders");
   };
 
-  const handleOxaPayCheckout = async () => {
+  const handleCryptoCheckout = async () => {
     if (items.length === 0) {
       uiToast({
         title: "Empty Cart",
@@ -113,24 +113,18 @@ const Checkout = () => {
         email: wallet?.user?.email || "",
       };
 
-      // Note: We'll create a pending order, but the backend will need to support this
-      // For now, we'll create the order and then generate invoice
-      // The order will be marked as 'paid' when webhook confirms payment
+      // Create order first to get order_number (with payment_method: 'crypto')
+      const order = await createOrder(recipient, 'crypto');
       
-      // Generate OXA Pay invoice with order_id placeholder
-      // We'll update the order_id after order creation
-      const returnUrl = `${window.location.origin}/payment-success`;
-      const callbackUrl = `${window.location.origin}/api/v2/wallet/oxapay/webhook/`;
-      
-      // Create order first to get order_number (with payment_method: 'oxapay')
-      const order = await createOrder(recipient, 'oxapay');
-      
-      // Generate OXA Pay invoice with order number and item details
+      // Generate invoice with order number and item details
       const itemDescriptions = items.map(item => 
         `${item.quantity}x ${item.description}`
       ).join(', ');
       
-      const invoice = await generateOxaPayInvoice({
+      const returnUrl = `${window.location.origin}/payment-success`;
+      const callbackUrl = `${window.location.origin}/api/v2/wallet/webhook/`;
+      
+      const invoice = await generateInvoice({
         amount: subtotal,
         currency: "usd",
         lifetime: 30, // 30 minutes
@@ -156,14 +150,14 @@ const Checkout = () => {
         subtotal,
       }));
 
-      // Redirect to OXA Pay payment link
+      // Redirect to payment link
       if (invoice.payment_url) {
         window.location.href = invoice.payment_url;
       } else {
-        throw new Error("No payment URL received from OXA Pay");
+        throw new Error("No payment URL received");
       }
     } catch (error: any) {
-      console.error("Failed to create OXA Pay invoice:", error);
+      console.error("Failed to create invoice:", error);
       uiToast({
         title: "Error",
         description: error.response?.data?.detail || error.message || "Failed to create payment link",
@@ -246,11 +240,11 @@ const Checkout = () => {
               </div>
 
               <div className="flex items-center space-x-2 space-y-0">
-                <RadioGroupItem value="oxapay" id="oxapay" />
-                <Label htmlFor="oxapay" className="flex-1 cursor-pointer">
+                <RadioGroupItem value="crypto" id="crypto" />
+                <Label htmlFor="crypto" className="flex-1 cursor-pointer">
                   <div className="flex items-center gap-2">
                     <CreditCard className="h-4 w-4" />
-                    <span>Pay with Crypto (OXA Pay)</span>
+                    <span>Pay with Crypto</span>
                   </div>
                   <div className="text-sm text-muted-foreground ml-6">
                     Pay with Bitcoin, Ethereum, USDT, and more
@@ -259,8 +253,8 @@ const Checkout = () => {
               </div>
             </RadioGroup>
 
-            {/* Network Selection (only for OXA Pay) */}
-            {paymentMethod === "oxapay" && (
+            {/* Network Selection (only for Crypto) */}
+            {paymentMethod === "crypto" && (
               <div className="pt-4 border-t space-y-4">
                 <div>
                   <Label>Select Payment Network</Label>
@@ -301,11 +295,11 @@ const Checkout = () => {
             <Button
               className="w-full"
               size="lg"
-              onClick={paymentMethod === "wallet" ? handleWalletCheckout : handleOxaPayCheckout}
+              onClick={paymentMethod === "wallet" ? handleWalletCheckout : handleCryptoCheckout}
               disabled={
                 processing ||
                 (paymentMethod === "wallet" && !hasSufficientBalance) ||
-                (paymentMethod === "oxapay" && !selectedNetwork)
+                (paymentMethod === "crypto" && !selectedNetwork)
               }
             >
               {processing ? (

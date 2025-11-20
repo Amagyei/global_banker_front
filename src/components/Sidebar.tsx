@@ -284,12 +284,6 @@ export const Sidebar = () => {
                     Top Up
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/top-up-oxapay" className="flex items-center gap-2 cursor-pointer">
-                    <Wallet className="h-4 w-4" />
-                    Top Up (OXA Pay)
-                  </Link>
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   className="text-destructive cursor-pointer"

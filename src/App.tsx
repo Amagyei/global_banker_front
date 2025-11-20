@@ -13,7 +13,6 @@ import Transactions from "./pages/Transactions";
 import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
 import TopUp from "./pages/TopUp";
-import TopUpOxaPay from "./pages/TopUpOxaPay";
 import Checkout from "./pages/Checkout";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import WebhookStatus from "./pages/WebhookStatus";
@@ -42,7 +41,6 @@ const MainContent = () => {
             <Route path="/profile" element={<Profile />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/top-up" element={<TopUp />} />
-            <Route path="/top-up-oxapay" element={<TopUpOxaPay />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/webhook-status" element={<WebhookStatus />} />

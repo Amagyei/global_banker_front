@@ -273,7 +273,7 @@ export async function createOrder(
     country_code?: string;
     delivery_channel?: string;
   },
-  paymentMethod: 'wallet' | 'oxapay' = 'wallet'
+  paymentMethod: 'wallet' | 'crypto' = 'wallet'
 ) {
   const { data } = await api.post("/orders/", { 
     recipient,
@@ -293,11 +293,11 @@ export async function getCryptoNetworks() {
   return data;
 }
 
-export async function createTopUp(amountMinor: number, networkId: string, ttlMinutes: number = 30) {
-  const { data } = await api.post("/wallet/topups/", {
+export async function createTopUp(amountMinor: number, networkId: string, useStaticAddress: boolean = false) {
+  const { data } = await api.post("/v2/wallet/topups/", {
     amount_minor: amountMinor,
     network_id: networkId,
-    ttl_minutes: ttlMinutes,
+    use_static_address: useStaticAddress,
   });
   return data;
 }
@@ -317,34 +317,25 @@ export async function getOnChainTransactions() {
   return data;
 }
 
-// OXA Pay API (v2)
-export async function createTopUpV2(amountMinor: number, networkId: string, useStaticAddress: boolean = false) {
-  const { data } = await api.post("/v2/wallet/topups/", {
-    amount_minor: amountMinor,
-    network_id: networkId,
-    use_static_address: useStaticAddress,
-  });
+// Payment API (v2)
+export async function getPayments() {
+  const { data } = await api.get("/v2/wallet/payments/");
   return data;
 }
 
-export async function getOxaPayPayments() {
-  const { data } = await api.get("/v2/wallet/oxapay/payments/");
-  return data;
-}
-
-export async function createOxaPayStaticAddress(networkId: string) {
-  const { data } = await api.post("/v2/wallet/oxapay/static-addresses/", {
+export async function createStaticAddress(networkId: string) {
+  const { data } = await api.post("/v2/wallet/static-addresses/", {
     network_id: networkId,
   });
   return data;
 }
 
-export async function getOxaPayStaticAddresses() {
-  const { data } = await api.get("/v2/wallet/oxapay/static-addresses/");
+export async function getStaticAddresses() {
+  const { data } = await api.get("/v2/wallet/static-addresses/");
   return data;
 }
 
-export async function generateOxaPayInvoice(params: {
+export async function generateInvoice(params: {
   amount: number;
   currency?: string;
   lifetime?: number;
@@ -361,28 +352,28 @@ export async function generateOxaPayInvoice(params: {
   mixed_payment?: boolean;
   sandbox?: boolean;
 }) {
-  const { data } = await api.post("/v2/wallet/oxapay/invoices/", params);
+  const { data } = await api.post("/v2/wallet/invoices/", params);
   return data;
 }
 
-export async function getOxaPayAcceptedCurrencies() {
-  const { data } = await api.get("/v2/wallet/oxapay/payments/accepted_currencies/");
+export async function getAcceptedCurrencies() {
+  const { data } = await api.get("/v2/wallet/payments/accepted_currencies/");
   return data;
 }
 
 // Webhook monitoring endpoints (admin only)
 export async function getWebhookStatus() {
-  const { data } = await api.get("/v2/wallet/oxapay/webhook/status/");
+  const { data } = await api.get("/v2/wallet/webhook/status/");
   return data;
 }
 
 export async function getWebhookPaymentDetail(trackId: string) {
-  const { data } = await api.get(`/v2/wallet/oxapay/webhook/payment/${trackId}/`);
+  const { data } = await api.get(`/v2/wallet/webhook/payment/${trackId}/`);
   return data;
 }
 
 export async function testWebhook(trackId: string, status: string = "paid", txHash?: string) {
-  const { data } = await api.post("/v2/wallet/oxapay/webhook/test/", {
+  const { data } = await api.post("/v2/wallet/webhook/test/", {
     track_id: trackId,
     status,
     tx_hash: txHash,

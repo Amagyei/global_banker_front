@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { BankSelectionModal, Bank } from "@/components/BankSelectionModal";
-import { BankAccountTable, BankAccount } from "@/components/BankAccountTable";
+import { BankSelectionModal } from "@/components/BankSelectionModal";
+import { BankAccountTable } from "@/components/BankAccountTable";
 import { Filter } from "lucide-react";
 import { getBanks, getAccounts } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import type { Bank, BankAccount } from "@/types";
 
 interface CountryCardsProps {
   country: string;

@@ -8,12 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-
-export interface Bank {
-  id: string;
-  name: string;
-  logo: string;
-}
+import type { Bank } from "@/types";
 
 interface BankSelectionModalProps {
   isOpen: boolean;

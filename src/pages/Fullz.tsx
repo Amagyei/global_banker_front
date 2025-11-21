@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { BankSelectionModal, Bank } from "@/components/BankSelectionModal";
-import { FullzTable, FullzPackage } from "@/components/FullzTable";
+import { BankSelectionModal } from "@/components/BankSelectionModal";
+import { FullzTable } from "@/components/FullzTable";
 import { Filter } from "lucide-react";
 import { getBanks, getFullzPackages } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import type { Bank, FullzPackage } from "@/types";
 
 const FullzPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

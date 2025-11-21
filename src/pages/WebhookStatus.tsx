@@ -7,41 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, RefreshCw, CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { getWebhookStatus, getWebhookPaymentDetail, testWebhook } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-
-interface WebhookStatus {
-  webhook_endpoint: string;
-  status: string;
-  last_24_hours: {
-    total_payments: number;
-    status_breakdown: {
-      pending: number;
-      paid: number;
-      failed: number;
-      expired: number;
-    };
-    expired_but_pending: number;
-  };
-  recent_pending: Array<{
-    track_id: string;
-    address: string;
-    amount: string;
-    currency: string;
-    pay_currency: string;
-    created_at: string;
-    expired_at: string | null;
-    is_expired: boolean;
-    user: string;
-  }>;
-  recent_paid: Array<{
-    track_id: string;
-    address: string;
-    amount: string;
-    currency: string;
-    pay_currency: string;
-    paid_at: string;
-    user: string;
-  }>;
-}
+import type { WebhookStatus } from "@/types";
 
 export default function WebhookStatus() {
   const [status, setStatus] = useState<WebhookStatus | null>(null);

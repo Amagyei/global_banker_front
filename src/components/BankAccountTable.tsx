@@ -8,16 +8,11 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
-
-export interface BankAccount {
-  id: string;
-  balance: string;
-  description: string;
-  price: string;
-}
+import type { BankAccount } from "@/types";
 
 interface BankAccountTableProps {
   bankAccounts: BankAccount[];
@@ -52,7 +47,9 @@ export const BankAccountTable = ({ bankAccounts, bankName }: BankAccountTablePro
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="font-semibold">Balance</TableHead>
+            <TableHead className="font-semibold">Name</TableHead>
             <TableHead className="font-semibold">Description</TableHead>
+            <TableHead className="font-semibold">Has Fullz</TableHead>
             <TableHead className="font-semibold">Price</TableHead>
             <TableHead className="font-semibold text-right">Action</TableHead>
           </TableRow>
@@ -63,7 +60,17 @@ export const BankAccountTable = ({ bankAccounts, bankName }: BankAccountTablePro
               <TableCell className="font-medium text-primary">
                 {account.balance}
               </TableCell>
+              <TableCell className="font-medium">
+                {account.name || '-'}
+              </TableCell>
               <TableCell>{account.description}</TableCell>
+              <TableCell>
+                <Checkbox 
+                  checked={account.has_fullz || false} 
+                  disabled
+                  aria-label="Has Fullz"
+                />
+              </TableCell>
               <TableCell className="font-semibold text-success">
                 {account.price}
               </TableCell>

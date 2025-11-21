@@ -4,16 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Package, Calendar, CreditCard } from "lucide-react";
 import { getOrders } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-
-interface Order {
-  id: string;
-  order_number: string;
-  date: string;
-  brand: string;
-  items: string;
-  total: string;
-  status: "paid" | "delivered" | "pending" | "canceled" | "failed";
-}
+import type { Order } from "@/types";
 
 const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);

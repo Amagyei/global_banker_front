@@ -11,15 +11,7 @@ import { Card } from "@/components/ui/card";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
-
-export interface FullzPackage {
-  id: string;
-  name: string;
-  description: string;
-  quantity: number;
-  price: string;
-  price_minor: number;
-}
+import type { FullzPackage } from "@/types";
 
 interface FullzTableProps {
   packages: FullzPackage[];
@@ -30,18 +22,11 @@ export const FullzTable = ({ packages, bankName }: FullzTableProps) => {
   const { addToCart } = useCart();
   
   const handleBuy = (pkg: FullzPackage) => {
-    // Convert package to cart item format
-    const cartItem = {
-      id: pkg.id,
-      description: `${pkg.name} - ${pkg.quantity} fullz`,
-      price: pkg.price,
-      quantity: 1,
-    };
-    
     toast.success(`Added ${pkg.name} to cart!`, {
       description: `${pkg.quantity} fullz for ${pkg.price}`,
     });
-    addToCart(cartItem as any);
+    // CartContext now handles FullzPackage directly
+    addToCart(pkg);
   };
 
   if (packages.length === 0) {

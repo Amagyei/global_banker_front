@@ -9,13 +9,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { getCryptoNetworks } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
-
-export interface CryptoNetwork {
-  id: string;
-  name: string;
-  native_symbol: string;
-  is_testnet: boolean;
-}
+import type { CryptoNetwork } from "@/types";
 
 interface NetworkSelectProps {
   value?: string;

@@ -1,18 +1,11 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import type { BankAccount } from "@/components/BankAccountTable";
-
-export interface CartItem {
-  id: string;
-  description: string;
-  price: string; // currency string like "$95.00"
-  quantity: number;
-}
+import type { BankAccount, CartItem, FullzPackage } from "@/types";
 
 interface CartContextValue {
   items: CartItem[];
   totalQuantity: number;
   subtotal: number;
-  addToCart: (account: BankAccount) => void;
+  addToCart: (item: BankAccount | FullzPackage | CartItem) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
 }
@@ -43,21 +36,48 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [items]);
 
-  const addToCart = (account: BankAccount) => {
+  const addToCart = (item: BankAccount | FullzPackage | CartItem) => {
     setItems((prev) => {
-      const existing = prev.find((i) => i.id === account.id);
-      if (existing) {
-        return prev.map((i) => (i.id === account.id ? { ...i, quantity: i.quantity + 1 } : i));
+      let cartItem: CartItem;
+      
+      // Check if item is already a CartItem (has description but not balance or name)
+      if ('description' in item && 'price' in item && 'quantity' in item && !('balance' in item) && !('name' in item)) {
+        cartItem = item as CartItem;
       }
-      return [
-        ...prev,
-        {
+      // Handle BankAccount (has balance property)
+      else if ('balance' in item) {
+        const account = item as BankAccount;
+        cartItem = {
           id: account.id,
           description: account.description,
           price: account.price,
           quantity: 1,
-        },
-      ];
+        };
+      }
+      // Handle FullzPackage (has name and quantity properties)
+      else if ('name' in item) {
+        const pkg = item as FullzPackage;
+        cartItem = {
+          id: pkg.id,
+          description: `${pkg.name} - ${pkg.quantity} fullz`,
+          price: pkg.price,
+          quantity: 1,
+        };
+      } else {
+        // Unknown item type, return unchanged
+        return prev;
+      }
+      
+      // Add or update item in cart
+      const existing = prev.find((i) => i.id === cartItem.id);
+      if (existing) {
+        return prev.map((i) => 
+          i.id === cartItem.id 
+            ? { ...i, quantity: i.quantity + cartItem.quantity } 
+            : i
+        );
+      }
+      return [...prev, cartItem];
     });
   };
 

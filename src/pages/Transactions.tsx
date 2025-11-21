@@ -11,15 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getTransactions } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-
-interface Transaction {
-  id: string;
-  date: string;
-  brand: string | null;
-  description: string;
-  amount: string;
-  status: "completed" | "pending" | "failed";
-}
+import type { Transaction } from "@/types";
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);

@@ -21,6 +21,18 @@ const TopUp = () => {
   const [creating, setCreating] = useState(false);
   const [topupData, setTopupData] = useState<any>(null);
   const [paymentData, setPaymentData] = useState<any>(null);
+  
+  // Debug: Log paymentData changes
+  useEffect(() => {
+    console.log("TopUp - paymentData state changed:", paymentData);
+    console.log("TopUp - paymentData type:", typeof paymentData);
+    console.log("TopUp - paymentData is truthy:", !!paymentData);
+    console.log("TopUp - paymentData has address:", !!paymentData?.address);
+    if (paymentData) {
+      console.log("TopUp - paymentData keys:", Object.keys(paymentData));
+      console.log("TopUp - paymentData.address:", paymentData.address);
+    }
+  }, [paymentData]);
   const [copied, setCopied] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<string>("");
   const [checkingStatus, setCheckingStatus] = useState(false);
@@ -119,8 +131,39 @@ const TopUp = () => {
       const amountMinor = amount * 100; // Convert to cents
       // v2 API returns both topup and payment
       const response = await createTopUp(amountMinor, selectedNetwork, false);
-      setTopupData(response.topup);
-      setPaymentData(response.payment);
+      console.log("TopUp - Full API response:", response);
+      console.log("TopUp - Response type:", typeof response);
+      console.log("TopUp - Response keys:", response ? Object.keys(response) : 'null');
+      console.log("TopUp - response.topup:", response?.topup);
+      console.log("TopUp - response.payment:", response?.payment);
+      
+      // Handle different response structures
+      // Note: createTopUp already extracts .data from Axios, so response is the data object
+      let paymentToSet = null;
+      
+      if (response?.payment) {
+        paymentToSet = response.payment;
+        console.log("TopUp - ✅ Found payment in response.payment:", paymentToSet);
+      } else if (response?.oxapay_payment) {
+        paymentToSet = response.oxapay_payment;
+        console.log("TopUp - ✅ Found payment in response.oxapay_payment:", paymentToSet);
+      } else {
+        console.warn("TopUp - ⚠️ No payment data found. Full response:", JSON.stringify(response, null, 2));
+      }
+      
+      if (paymentToSet) {
+        console.log("TopUp - Setting paymentData:", paymentToSet);
+        console.log("TopUp - paymentToSet.address:", paymentToSet.address);
+        console.log("TopUp - paymentToSet.track_id:", paymentToSet.track_id);
+        setPaymentData(paymentToSet);
+      } else {
+        console.error("TopUp - ❌ No payment data to set! Response structure:", response);
+      }
+      
+      if (response.topup) {
+        setTopupData(response.topup);
+      }
+      
       toast.success("Top-up request created!", {
         description: "Send crypto to the address below",
       });
@@ -222,12 +265,12 @@ const TopUp = () => {
           </CardContent>
         </Card>
 
-        {paymentData && (
+        {paymentData && paymentData.address ? (
           <Card className="shadow-card border-primary">
             <CardHeader>
               <CardTitle>Deposit Address</CardTitle>
               <CardDescription>
-                Send {paymentData.pay_currency?.toUpperCase()} to this address
+                Send {paymentData.pay_currency?.toUpperCase() || 'crypto'} to this address
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -238,6 +281,10 @@ const TopUp = () => {
                     src={paymentData.qr_code} 
                     alt="Payment QR Code" 
                     className="w-48 h-48"
+                    onError={(e) => {
+                      console.error("QR code image failed to load:", paymentData.qr_code);
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                 </div>
               )}
@@ -246,7 +293,7 @@ const TopUp = () => {
               <div className="p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <code className="text-sm font-mono break-all flex-1">
-                    {paymentData.address}
+                    {paymentData.address || 'Loading address...'}
                   </code>
                   <Button
                     variant="outline"
@@ -323,6 +370,28 @@ const TopUp = () => {
                   </Button>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="shadow-card">
+            <CardContent className="py-8">
+              <div className="text-sm text-muted-foreground text-center">
+                {creating ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                    <span>Creating payment...</span>
+                  </div>
+                ) : (
+                  <div>
+                    <p>No active payment. Create a top-up to see payment details.</p>
+                    {paymentData && (
+                      <p className="text-xs mt-2 text-destructive">
+                        Debug: paymentData exists but address is missing. Data: {JSON.stringify(paymentData, null, 2)}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         )}

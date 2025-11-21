@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
 import { getWallet, getCryptoNetworks, generateInvoice } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-type PaymentMethod = "wallet" | "crypto";
+import type { PaymentMethod } from "@/types";
 
 // Hardcoded list of supported networks (mainnet only, no testnet)
 const SUPPORTED_NETWORKS = ['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'SOL', 'LTC'];

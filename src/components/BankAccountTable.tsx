@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
@@ -49,7 +48,6 @@ export const BankAccountTable = ({ bankAccounts, bankName }: BankAccountTablePro
             <TableHead className="font-semibold">Balance</TableHead>
             <TableHead className="font-semibold">Name</TableHead>
             <TableHead className="font-semibold">Description</TableHead>
-            <TableHead className="font-semibold">Has Fullz</TableHead>
             <TableHead className="font-semibold">Price</TableHead>
             <TableHead className="font-semibold text-right">Action</TableHead>
           </TableRow>
@@ -64,13 +62,6 @@ export const BankAccountTable = ({ bankAccounts, bankName }: BankAccountTablePro
                 {account.name || '-'}
               </TableCell>
               <TableCell>{account.description}</TableCell>
-              <TableCell>
-                <Checkbox 
-                  checked={account.has_fullz || false} 
-                  disabled
-                  aria-label="Has Fullz"
-                />
-              </TableCell>
               <TableCell className="font-semibold text-success">
                 {account.price}
               </TableCell>

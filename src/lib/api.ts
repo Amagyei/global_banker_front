@@ -190,7 +190,7 @@ export async function getCountries(params?: { is_supported?: boolean }) {
   return data;
 }
 
-export async function getBanks(params?: { country?: string; is_active?: boolean }) {
+export async function getBanks(params?: { country?: string; is_active?: boolean; has_fullz?: boolean }) {
   const { data } = await api.get("/catalog/banks/", { params });
   return data;
 }

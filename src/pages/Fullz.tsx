@@ -18,12 +18,15 @@ const FullzPage = () => {
   const loadBanks = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await getBanks({ is_active: true });
+      const response = await getBanks({ is_active: true, has_fullz: true });
       const banksData = response.results || response;
-      const formattedBanks: Bank[] = banksData.map((bank: any) => ({
+      const filteredBanks = (banksData || []).filter((bank: any) => bank.has_fullz);
+      const formattedBanks: Bank[] = filteredBanks.map((bank: any) => ({
         id: bank.id,
         name: bank.name,
         logo: bank.logo_url || bank.name.charAt(0),
+        logo_url: bank.logo_url,
+        has_fullz: bank.has_fullz,
       }));
       setBanks(formattedBanks);
     } catch (error: any) {

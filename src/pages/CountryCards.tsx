@@ -62,6 +62,7 @@ const CountryCards = ({ country }: CountryCardsProps) => {
       const accountsData = response.results || response;
       const formattedAccounts: BankAccount[] = accountsData.map((account: any) => ({
         id: account.id,
+        name: account.name,
         balance: account.balance,
         description: account.description,
         price: account.price,

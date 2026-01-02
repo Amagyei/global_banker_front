@@ -4,6 +4,33 @@ import axios from "axios";
 const ACCESS_KEY = "auth.access";
 const REFRESH_KEY = "auth.refresh";
 const USER_KEY = "auth.user";
+const LAST_ACTIVITY_KEY = "auth.lastActivity";
+const AUTH_ACTIVITY_EVENT = "auth:activity";
+const AUTH_LOGOUT_EVENT = "auth:logout";
+
+const dispatchAuthEvent = (type: string, detail?: any) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+  window.dispatchEvent(new CustomEvent(type, { detail }));
+};
+
+export const ACCESS_STORAGE_KEY = ACCESS_KEY;
+export const REFRESH_STORAGE_KEY = REFRESH_KEY;
+export const LAST_ACTIVITY_STORAGE_KEY = LAST_ACTIVITY_KEY;
+export const AUTH_ACTIVITY_EVENT_NAME = AUTH_ACTIVITY_EVENT;
+export const AUTH_LOGOUT_EVENT_NAME = AUTH_LOGOUT_EVENT;
+
+export function markSessionActivity(timestamp: number = Date.now()) {
+  localStorage.setItem(LAST_ACTIVITY_KEY, String(timestamp));
+  dispatchAuthEvent(AUTH_ACTIVITY_EVENT, timestamp);
+  return timestamp;
+}
+
+export function getLastActivityTimestamp(): number | null {
+  const raw = localStorage.getItem(LAST_ACTIVITY_KEY);
+  return raw ? Number(raw) : null;
+}
 
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_KEY);
@@ -13,12 +40,15 @@ export function setSession(tokens: { access: string; refresh: string }, user?: a
   localStorage.setItem(ACCESS_KEY, tokens.access);
   localStorage.setItem(REFRESH_KEY, tokens.refresh);
   if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
+  markSessionActivity();
 }
 
 export function clearSession() {
   localStorage.removeItem(ACCESS_KEY);
   localStorage.removeItem(REFRESH_KEY);
   localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(LAST_ACTIVITY_KEY);
+  dispatchAuthEvent(AUTH_LOGOUT_EVENT);
 }
 
 export function getUser<T = any>(): T | null {
@@ -53,6 +83,7 @@ api.interceptors.request.use((config) => {
       config.headers = {} as typeof config.headers;
     }
     config.headers["Authorization"] = `Bearer ${token}`;
+    markSessionActivity();
   }
   // Log requests in development
   if (import.meta.env.DEV) {
@@ -82,6 +113,7 @@ async function refreshToken(): Promise<string | null> {
     }
     localStorage.setItem(ACCESS_KEY, newAccess);
     pendingQueue.forEach((fn) => fn(newAccess));
+    markSessionActivity();
     return newAccess;
   } catch (err) {
     console.error("Token refresh failed:", err);
@@ -115,10 +147,11 @@ api.interceptors.response.use(
     const original = error.config;
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true;
-      const newToken = await refreshToken();
+    const newToken = await refreshToken();
       if (newToken) {
         original.headers = original.headers || {};
         original.headers["Authorization"] = `Bearer ${newToken}`;
+      markSessionActivity();
         return api(original);
       }
     }
@@ -246,8 +279,16 @@ export async function getCart() {
   return data;
 }
 
-export async function addToCart(accountId: string, quantity: number = 1) {
-  const { data } = await api.post("/cart/items/", { account_id: accountId, quantity });
+export async function addToCart(accountId?: string, quantity: number = 1, fullzPackageId?: string) {
+  const payload: any = { quantity };
+  if (accountId) {
+    payload.account_id = accountId;
+  } else if (fullzPackageId) {
+    payload.fullz_package_id = fullzPackageId;
+  } else {
+    throw new Error("Either accountId or fullzPackageId is required");
+  }
+  const { data } = await api.post("/cart/items/", payload);
   return data;
 }
 

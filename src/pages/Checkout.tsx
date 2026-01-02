@@ -71,8 +71,58 @@ const Checkout = () => {
   };
 
   const handleWalletCheckout = async () => {
-    // Redirect to orders page - the existing checkout logic in Sidebar will handle wallet payment
-    navigate("/orders");
+    if (items.length === 0) {
+      uiToast({
+        title: "Empty Cart",
+        description: "Your cart is empty",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setProcessing(true);
+
+      // Step 1: Sync items to backend cart
+      const { addToCart, createOrder } = await import("@/lib/api");
+      for (const item of items) {
+        try {
+          // Check item type from cart item metadata or description
+          const isFullzPackage = (item as any).item_type === 'fullz_package' || 
+                                 item.description.toLowerCase().includes('fullz');
+          if (isFullzPackage) {
+            await addToCart(undefined, item.quantity, item.id);
+          } else {
+            await addToCart(item.id, item.quantity);
+          }
+        } catch (error) {
+          console.log("Item sync:", error);
+        }
+      }
+
+      // Step 2: Create order with wallet payment
+      const recipient = {
+        name: "Customer",
+        email: wallet?.user?.email || "",
+      };
+
+      const order = await createOrder(recipient, 'wallet');
+      
+      // Clear cart after successful order creation
+      clearCart();
+      
+      // Redirect to orders page
+      navigate("/orders");
+    } catch (error: any) {
+      console.error("Failed to create order:", error);
+      uiToast({
+        title: "Error",
+        description: error.response?.data?.detail || error.message || "Failed to complete purchase",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const handleCryptoCheckout = async () => {
@@ -101,7 +151,14 @@ const Checkout = () => {
       const { addToCart, createOrder } = await import("@/lib/api");
       for (const item of items) {
         try {
-          await addToCart(item.id, item.quantity);
+          // Check item type from cart item metadata or description
+          const isFullzPackage = (item as any).item_type === 'fullz_package' || 
+                                 item.description.toLowerCase().includes('fullz');
+          if (isFullzPackage) {
+            await addToCart(undefined, item.quantity, item.id);
+          } else {
+            await addToCart(item.id, item.quantity);
+          }
         } catch (error) {
           console.log("Item sync:", error);
         }

@@ -52,16 +52,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: account.description,
           price: account.price,
           quantity: 1,
+          item_type: 'account',  // Track item type for checkout
         };
       }
-      // Handle FullzPackage (has name and quantity properties)
-      else if ('name' in item) {
+      // Handle FullzPackage (has name and quantity properties, but no balance)
+      else if ('name' in item && !('balance' in item)) {
         const pkg = item as FullzPackage;
         cartItem = {
           id: pkg.id,
           description: `${pkg.name} - ${pkg.quantity} fullz`,
           price: pkg.price,
           quantity: 1,
+          item_type: 'fullz_package',  // Track item type for checkout
         };
       } else {
         // Unknown item type, return unchanged

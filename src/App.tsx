@@ -20,6 +20,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/lib/auth";
 
 const queryClient = new QueryClient();
@@ -59,20 +60,22 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          {/* Auth routes without navbar */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          
-          {/* Main app routes (protected) with navbar */}
-          <Route element={<ProtectedRoute /> }>
-            <Route path="/*" element={
-              <CartProvider>
-                <MainContent />
-              </CartProvider>
-            } />
-          </Route>
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            {/* Auth routes without navbar */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            
+            {/* Main app routes (protected) with navbar */}
+            <Route element={<ProtectedRoute /> }>
+              <Route path="/*" element={
+                <CartProvider>
+                  <MainContent />
+                </CartProvider>
+              } />
+            </Route>
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

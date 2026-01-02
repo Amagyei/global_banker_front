@@ -21,13 +21,16 @@ const Orders = () => {
       const response = await getOrders();
       const ordersData = response.results || response;
       const formattedOrders: Order[] = ordersData.map((order: any) => {
-        // Get first item's bank name as brand
+        // Get first item's bank name as brand (from account or fullz_package)
         const brand = order.items && order.items.length > 0 
-          ? order.items[0].account_bank_name || '-' 
+          ? (order.items[0].item_bank_name || order.items[0].account_bank_name || order.items[0].fullz_package_bank_name || '-')
           : '-';
-        // Get items description
+        // Get items description (supports both accounts and fullz packages)
         const itemsDesc = order.items && order.items.length > 0
-          ? order.items.map((item: any) => `${item.quantity}x ${item.account_name}`).join(', ')
+          ? order.items.map((item: any) => {
+              const itemName = item.item_name || item.account_name || item.fullz_package_name || 'Unknown';
+              return `${item.quantity}x ${itemName}`;
+            }).join(', ')
           : 'No items';
         
         return {
@@ -119,6 +122,13 @@ const Orders = () => {
         ))}
       </div>
       )}
+
+      {/* Support Message */}
+      <div className="mt-8 pt-8 border-t">
+        <p className="text-center font-bold text-destructive text-lg">
+          If you experience any issues with your purchase, please reach out to @mentor_kev on Telegram to resolve any issues.
+        </p>
+      </div>
     </div>
   );
 };

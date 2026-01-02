@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { CreditCard, Menu, Wallet, User, ShoppingBag, LogOut } from "lucide-react";
+import { CreditCard, Menu, Wallet, User, ShoppingBag, LogOut, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,11 +10,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+} from "@/components/ui/sheet";
 import { getWallet, clearSession } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import { SidebarContext } from "./Sidebar";
 
 export const Navbar = ({ children }: { children: React.ReactNode }) => {
@@ -47,8 +56,11 @@ export const Navbar = ({ children }: { children: React.ReactNode }) => {
             <span className="bg-gradient-primary bg-clip-text text-transparent">Bank Pro</span>
           </Link>
 
-          {/* Right: Wallet and Menu */}
+          {/* Right: Cart, Wallet and Menu */}
           <div className="flex items-center gap-3">
+            {/* Cart Icon - only show when items are in cart */}
+            <CartButton />
+            
             {/* Wallet Balance */}
             <WalletButton wallet={wallet} />
             
@@ -68,6 +80,123 @@ export const Navbar = ({ children }: { children: React.ReactNode }) => {
       {/* Sidebar and main content */}
       {children}
     </SidebarContext.Provider>
+  );
+};
+
+const CartButton = () => {
+  const { items, totalQuantity, subtotal, removeFromCart, clearCart } = useCart();
+  const [wallet, setWallet] = useState<any>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast: uiToast } = useToast();
+
+  useEffect(() => {
+    loadWallet();
+  }, []);
+
+  const loadWallet = async () => {
+    try {
+      const walletData = await getWallet();
+      setWallet(walletData);
+    } catch (error) {
+      console.error("Failed to load wallet:", error);
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (items.length === 0) {
+      uiToast({
+        title: "Empty Cart",
+        description: "Your cart is empty",
+        variant: "destructive",
+      });
+      return;
+    }
+    navigate("/checkout");
+  };
+
+  // Only show cart icon when there are items
+  if (totalQuantity === 0) {
+    return null;
+  }
+
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          className="relative shadow-lg"
+        >
+          <ShoppingCart className="h-5 w-5" />
+          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs h-4 min-w-[16px] px-1">
+            {totalQuantity}
+          </span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="right" className="bg-popover sm:max-w-lg">
+        <SheetHeader>
+          <SheetTitle>Cart</SheetTitle>
+        </SheetHeader>
+        <div className="mt-4 space-y-4">
+          {items.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Your cart is empty.</p>
+          ) : (
+            <div className="space-y-3">
+              {items.map((item) => (
+                <div key={item.id} className="flex items-center justify-between gap-3 rounded-md border p-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{item.description}</p>
+                    <p className="text-sm text-muted-foreground">Qty: {item.quantity} • {item.price}</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => removeFromCart(item.id)}>
+                    Remove
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <SheetFooter className="mt-6">
+          <div className="w-full space-y-3">
+            {wallet && (
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Wallet Balance</span>
+                <span className={
+                  wallet.balance_minor === 0 
+                    ? "text-destructive text-2xl font-bold" 
+                    : wallet.balance_minor >= Math.round(subtotal * 100) 
+                      ? "text-success font-semibold" 
+                      : "text-destructive font-semibold"
+                }>
+                  {wallet.balance || "$0.00"}
+                </span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Subtotal</span>
+              <span className="font-semibold">${subtotal.toFixed(2)}</span>
+            </div>
+            {wallet && wallet.balance_minor < Math.round(subtotal * 100) && (
+              <div className="text-xs text-destructive text-center">
+                Insufficient balance. Top up required.
+              </div>
+            )}
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={clearCart} disabled={items.length === 0 || checkoutLoading}>
+                Clear
+              </Button>
+              <Button 
+                disabled={items.length === 0 || checkoutLoading || (wallet && wallet.balance_minor < Math.round(subtotal * 100))}
+                onClick={handleCheckout}
+              >
+                {checkoutLoading ? "Processing..." : "Checkout"}
+              </Button>
+            </div>
+          </div>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 };
 

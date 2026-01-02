@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { CreditCard, User, ShoppingBag, Wallet, LogOut, ShoppingCart, Activity } from "lucide-react";
+import { CreditCard, User, ShoppingBag, Wallet, LogOut, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 import {
@@ -78,8 +78,8 @@ export const Sidebar = () => {
     { name: "US Banks", path: "/us-banks", icon: ShoppingBag },
     { name: "UK Banks", path: "/uk-banks", icon: ShoppingBag },
     { name: "Canada Banks", path: "/canada-banks", icon: ShoppingBag },
-    { name: "Webhook Status", path: "/webhook-status", icon: Activity },
     { name: "Fullz", path: "/fullz", icon: ShoppingBag },
+    { name: "Orders", path: "/orders", icon: ShoppingBag },
     { name: "Transactions", path: "/transactions", icon: Wallet },
   ];
 

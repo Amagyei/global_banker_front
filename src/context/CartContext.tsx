@@ -12,10 +12,18 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
-function parsePrice(priceString: string): number {
-  const cleaned = priceString.replace(/[^0-9.]/g, "");
-  const value = parseFloat(cleaned);
-  return Number.isFinite(value) ? value : 0;
+function parsePrice(priceValue: string | number): number {
+  // Handle number directly (from MoneyField .amount)
+  if (typeof priceValue === 'number') {
+    return Number.isFinite(priceValue) ? priceValue : 0;
+  }
+  // Handle string like "$95.00"
+  if (typeof priceValue === 'string') {
+    const cleaned = priceValue.replace(/[^0-9.]/g, "");
+    const value = parseFloat(cleaned);
+    return Number.isFinite(value) ? value : 0;
+  }
+  return 0;
 }
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

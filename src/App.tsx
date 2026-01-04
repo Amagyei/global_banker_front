@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { Sidebar } from "./components/Sidebar";
 import { VerificationWarning } from "./components/VerificationWarning";
+import { CyberBackground } from "./components/CyberBackground";
 import Dashboard from "./pages/Dashboard";
 import CountryCards from "./pages/CountryCards";
 import Fullz from "./pages/Fullz";
@@ -27,30 +28,33 @@ const queryClient = new QueryClient();
 
 const MainContent = () => {
   return (
-    <Navbar>
-      <Sidebar />
-      <div className="flex min-h-screen bg-background">
-        <div className="flex-1 overflow-auto pt-16">
-          <VerificationWarning />
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/us-banks" element={<CountryCards country="US" />} />
-            <Route path="/uk-banks" element={<CountryCards country="UK" />} />
-            <Route path="/canada-banks" element={<CountryCards country="Canada" />} />
-            <Route path="/fullz" element={<Fullz />} />
-            <Route path="/transactions" element={<Transactions />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/top-up" element={<TopUp />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
-            <Route path="/webhook-status" element={<WebhookStatus />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+    <div className="min-h-screen bg-background relative">
+      <CyberBackground />
+      <Navbar>
+        <Sidebar />
+        <div className="flex min-h-screen">
+          <div className="flex-1 overflow-auto pt-16">
+            <VerificationWarning />
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/us-banks" element={<CountryCards country="US" />} />
+              <Route path="/uk-banks" element={<CountryCards country="UK" />} />
+              <Route path="/canada-banks" element={<CountryCards country="Canada" />} />
+              <Route path="/fullz" element={<Fullz />} />
+              <Route path="/transactions" element={<Transactions />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/top-up" element={<TopUp />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/webhook-status" element={<WebhookStatus />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
         </div>
-      </div>
-    </Navbar>
+      </Navbar>
+    </div>
   );
 };
 

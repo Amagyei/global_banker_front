@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { CreditCard, Mail, Lock } from "lucide-react";
 import { login } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { CyberBackground } from "@/components/CyberBackground";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -32,8 +33,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <CyberBackground />
+      <div className="w-full max-w-md relative z-10 animate-fade-in">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 font-bold text-2xl mb-4">
             <div className="p-2 rounded-lg bg-gradient-primary">
@@ -44,7 +46,7 @@ const Login = () => {
           <p className="text-muted-foreground mt-2">Welcome back! Please login to your account</p>
         </div>
 
-        <Card className="shadow-hover">
+        <Card className="shadow-hover backdrop-blur-sm bg-card/80">
           <CardHeader>
             <CardTitle>Login</CardTitle>
             <CardDescription>Enter your credentials to access your account</CardDescription>

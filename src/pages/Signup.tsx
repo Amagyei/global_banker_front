@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { CreditCard, Mail, Lock, User } from "lucide-react";
 import { register } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { CyberBackground } from "@/components/CyberBackground";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -51,8 +52,9 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <CyberBackground />
+      <div className="w-full max-w-md relative z-10 animate-fade-in">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 font-bold text-2xl mb-4">
             <div className="p-2 rounded-lg bg-gradient-primary">
@@ -63,7 +65,7 @@ const Signup = () => {
           <p className="text-muted-foreground mt-2">Create your account and start shopping</p>
         </div>
 
-        <Card className="shadow-hover">
+        <Card className="shadow-hover backdrop-blur-sm bg-card/80">
           <CardHeader>
             <CardTitle>Sign Up</CardTitle>
             <CardDescription>Create a new account to get started</CardDescription>

@@ -392,8 +392,8 @@ function ScanLine() {
 
 export function CyberBackground() {
   return (
-    <div className="absolute inset-0" style={{ width: '100%', height: '100%' }}>
-      <Canvas camera={{ position: [0, 0, 6], fov: 75 }} style={{ width: '100%', height: '100%' }}>
+    <div className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
+      <Canvas camera={{ position: [0, 0, 6], fov: 75 }} style={{ width: '100%', height: '100%', pointerEvents: 'none' }}>
         <Suspense fallback={null}>
           <ambientLight intensity={0.25} />
           <pointLight position={[10, 10, 10]} intensity={0.4} color="#3b82f6" />
